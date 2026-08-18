@@ -1,0 +1,304 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: VM Image AI 1.0.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: vm-image-ai\n"
+
+msgid "(aipuffer, gemini, openrouter)"
+msgstr ""
+
+msgid "AI image generation + intelligent Image-SEO command centre"
+msgstr ""
+
+msgid "AI text engine (fallback chain)"
+msgstr ""
+
+msgid "AI-generate featured & blog images, auto-imported and SEO-optimised"
+msgstr ""
+
+msgid "API key"
+msgstr ""
+
+msgid "Alt max length"
+msgstr ""
+
+msgid "Alt min length"
+msgstr ""
+
+msgid "Attach to post (optional)"
+msgstr ""
+
+msgid "Auto-optimise images on upload"
+msgstr ""
+
+msgid "Auto-write SEO metadata"
+msgstr ""
+
+msgid "Auto-write SEO metadata on upload"
+msgstr ""
+
+msgid "Automation"
+msgstr ""
+
+msgid "Blog image max width"
+msgstr ""
+
+msgid "Brand / business context"
+msgstr ""
+
+msgid "Checkpoint"
+msgstr ""
+
+msgid "Configure the free AI + image engine stack and optimisation rules"
+msgstr ""
+
+msgid "Convert to WebP"
+msgstr ""
+
+msgid "Dashboard"
+msgstr ""
+
+msgid "Detail"
+msgstr ""
+
+msgid "Engine status"
+msgstr ""
+
+msgid "Every detected image-SEO gap, ranked by severity — fix one or fix all"
+msgstr ""
+
+msgid "Falls through your image engine chain until one succeeds, then writes alt / title / caption / description automatically."
+msgstr ""
+
+msgid "Featured height"
+msgstr ""
+
+msgid "Featured image (1200×630)"
+msgstr ""
+
+msgid "Featured width"
+msgstr ""
+
+msgid "Fix"
+msgstr ""
+
+msgid "Flag dimension over (px)"
+msgstr ""
+
+msgid "Flag files over (KB)"
+msgstr ""
+
+msgid "Generate"
+msgstr ""
+
+msgid "Generate & Import"
+msgstr ""
+
+msgid "Generate Images"
+msgstr ""
+
+msgid "God Fix batch size"
+msgstr ""
+
+msgid "Image AI"
+msgstr ""
+
+msgid "Image generation engine (fallback chain)"
+msgstr ""
+
+msgid "Image-SEO Health"
+msgstr ""
+
+msgid "Images in library"
+msgstr ""
+
+msgid "In-blog image (wide)"
+msgstr ""
+
+msgid "Injected into image + SEO prompts"
+msgstr ""
+
+msgid "Issue"
+msgstr ""
+
+msgid "Issue breakdown"
+msgstr ""
+
+msgid "JPEG quality"
+msgstr ""
+
+msgid "Language hint"
+msgstr ""
+
+msgid "Last scan: %s"
+msgstr ""
+
+msgid "Live model sync interval (hours)"
+msgstr ""
+
+msgid "Model"
+msgstr ""
+
+msgid "Model (or \"auto\" for live sync)"
+msgstr ""
+
+msgid "Never scanned."
+msgstr ""
+
+msgid "New image"
+msgstr ""
+
+msgid "No activity yet."
+msgstr ""
+
+msgid "No open issues. Run a scan if you have added new images."
+msgstr ""
+
+msgid "No open issues. Your images are clean."
+msgstr ""
+
+msgid "Object"
+msgstr ""
+
+msgid "Open Auditor"
+msgstr ""
+
+msgid "Open issues detected"
+msgstr ""
+
+msgid "Optimize / WebP"
+msgstr ""
+
+msgid "Please provide a subject or a post."
+msgstr ""
+
+msgid "Post types to audit"
+msgstr ""
+
+msgid "Powered by the VM Image AI engine."
+msgstr ""
+
+msgid "Preview"
+msgstr ""
+
+msgid "Provider order"
+msgstr ""
+
+msgid "REST API key"
+msgstr ""
+
+msgid "REST base"
+msgstr ""
+
+msgid "Re-scan"
+msgstr ""
+
+msgid "Recent activity"
+msgstr ""
+
+msgid "Request no watermark"
+msgstr ""
+
+msgid "Result"
+msgstr ""
+
+msgid "Run Full Scan"
+msgstr ""
+
+msgid "Run a scan to analyse your library."
+msgstr ""
+
+msgid "SEO Auditor"
+msgstr ""
+
+msgid "SEO writer"
+msgstr ""
+
+msgid "Save settings"
+msgstr ""
+
+msgid "Scan frequency"
+msgstr ""
+
+msgid "Scheduled library scans"
+msgstr ""
+
+msgid "Set as featured"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Sev"
+msgstr ""
+
+msgid "Sizing & optimisation"
+msgstr ""
+
+msgid "Steps"
+msgstr ""
+
+msgid "Subject / idea"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "VM Image AI"
+msgstr ""
+
+msgid "Vision engine (image → description)"
+msgstr ""
+
+msgid "Vision lets the plugin actually see each image so alt text is accurate, not guessed from the filename."
+msgstr ""
+
+msgid "Vision provider order"
+msgstr ""
+
+msgid "WebP quality"
+msgstr ""
+
+msgid "You do not have permission to access this page."
+msgstr ""
+
+msgid "Your generated image and its SEO metadata will appear here."
+msgstr ""
+
+msgid "e.g. Hyperlocal grocery delivery in an Indian city"
+msgstr ""
+
+msgid "image sub-path"
+msgstr ""
+
+msgid "model"
+msgstr ""
+
+msgid "off"
+msgstr ""
+
+msgid "ready"
+msgstr ""
+
+msgid "server URL"
+msgstr ""
+
+msgid "vision model"
+msgstr ""
+
+msgid "vision model (or \"auto\")"
+msgstr ""
+
+msgid "— none —"
+msgstr ""
+
+msgid "↻ Sync live models"
+msgstr ""
+
+msgid "⚡ God Fix"
+msgstr ""
+
+msgid "⚡ God Fix all"
+msgstr ""
+

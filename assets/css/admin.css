@@ -1,0 +1,265 @@
+/* VM Image AI — Titan dark UI
+   ------------------------------------------------------------------ */
+.vmia {
+	--bg: #0b1120;
+	--panel: #0f172a;
+	--panel-2: #131c31;
+	--line: #22304d;
+	--ink: #e5edff;
+	--muted: #8ea0c4;
+	--indigo: #6366f1;
+	--indigo-2: #818cf8;
+	--good: #22c55e;
+	--warn: #f59e0b;
+	--bad: #ef4444;
+	--radius: 16px;
+	color: var(--ink);
+	max-width: 1200px;
+}
+.vmia * { box-sizing: border-box; }
+
+/* Topbar ------------------------------------------------------------ */
+.vmia-topbar {
+	display: flex; align-items: center; justify-content: space-between;
+	gap: 16px; margin: 18px 0 22px; flex-wrap: wrap;
+}
+.vmia-brand { display: flex; align-items: center; gap: 14px; }
+.vmia-logo {
+	width: 46px; height: 46px; border-radius: 12px;
+	display: grid; place-items: center; font-weight: 800; letter-spacing: .5px;
+	background: linear-gradient(135deg, var(--indigo), #a855f7);
+	color: #fff; box-shadow: 0 6px 22px rgba(99,102,241,.45);
+}
+.vmia-brand h1 { margin: 0; font-size: 22px; color: var(--ink); line-height: 1.1; }
+.vmia-sub { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.vmia-actions { display: flex; gap: 10px; }
+
+/* Cards & grid ------------------------------------------------------ */
+.vmia-grid { display: grid; gap: 18px; margin-bottom: 18px; }
+.vmia-grid-2 { grid-template-columns: 1fr 1fr; }
+.vmia-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 900px) { .vmia-grid-2, .vmia-grid-3 { grid-template-columns: 1fr; } }
+
+.vmia-card {
+	background: linear-gradient(180deg, var(--panel), var(--panel-2));
+	border: 1px solid var(--line); border-radius: var(--radius);
+	padding: 22px; position: relative; overflow: hidden;
+}
+.vmia-card::before {
+	content: ""; position: absolute; inset: 0 0 auto 0; height: 2px;
+	background: linear-gradient(90deg, transparent, var(--indigo-2), transparent);
+	opacity: .55;
+}
+.vmia-card-title { margin: 0 0 14px; font-size: 12px; text-transform: uppercase;
+	letter-spacing: 1.4px; color: var(--indigo-2); font-weight: 700; }
+.vmia-card-label { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+.vmia-mt { margin-top: 16px; }
+.vmia-muted { color: var(--muted); font-size: 12px; }
+
+/* Score ring -------------------------------------------------------- */
+.vmia-score { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.vmia-ring {
+	--score: 0;
+	width: 150px; height: 150px; border-radius: 50%;
+	background:
+		radial-gradient(closest-side, var(--panel) 78%, transparent 79% 100%),
+		conic-gradient(var(--indigo) calc(var(--score) * 1%), #1e293b 0);
+	display: grid; place-items: center;
+}
+.vmia-ring-inner { text-align: center; }
+.vmia-grade { display: block; font-size: 30px; font-weight: 800; color: var(--indigo-2); }
+.vmia-score-num { font-size: 15px; color: var(--muted); }
+.vmia-stat-big { font-size: 40px; font-weight: 800; display: block; line-height: 1; }
+.vmia-danger { color: var(--warn); }
+
+/* Engine rows ------------------------------------------------------- */
+.vmia-engine-row { display: flex; align-items: center; gap: 10px; padding: 7px 0;
+	border-bottom: 1px dashed var(--line); font-size: 13px; }
+.vmia-engine-row:last-child { border-bottom: 0; }
+.vmia-engine-state { margin-left: auto; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+.vmia-dot { width: 9px; height: 9px; border-radius: 50%; background: #334155; }
+.vmia-dot.on { background: var(--good); box-shadow: 0 0 0 4px rgba(34,197,94,.15); }
+.vmia-dot.off { background: #475569; }
+.vmia-dot.unknown { background: var(--warn); box-shadow: 0 0 0 4px rgba(245,158,11,.15); }
+
+/* Tables ------------------------------------------------------------ */
+.vmia-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.vmia-table th { text-align: left; color: var(--muted); font-weight: 600; font-size: 11px;
+	text-transform: uppercase; letter-spacing: 1px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.vmia-table td { padding: 10px; border-bottom: 1px solid rgba(34,48,77,.5); vertical-align: middle; }
+.vmia-table tr:last-child td { border-bottom: 0; }
+.vmia-num { text-align: right; font-weight: 700; }
+.vmia-audit-table td.vmia-detail { color: var(--muted); }
+.vmia-thumb img { border-radius: 8px; display: block; }
+.vmia-noimg { color: var(--muted); }
+
+.vmia-sev { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; }
+.sev-1 { background: var(--indigo); }
+.sev-2 { background: var(--warn); }
+.sev-3 { background: var(--bad); }
+
+.vmia-row-actions { display: flex; gap: 6px; }
+.vmia-regen { font-size: 14px; padding: 6px 8px !important; }
+
+/* Inputs ------------------------------------------------------------ */
+.vmia-label { display: block; margin: 14px 0 6px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.vmia-label em { color: #64748b; font-style: normal; }
+.vmia-input {
+	width: 100%; background: #0a1122; border: 1px solid var(--line); color: var(--ink);
+	border-radius: 10px; padding: 10px 12px; font-size: 13px; transition: border-color .15s, box-shadow .15s;
+}
+.vmia-input:focus { outline: none; border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.25); }
+textarea.vmia-input { resize: vertical; }
+.vmia-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; }
+.vmia-check { padding-bottom: 10px; }
+
+.vmia-switch { display: flex; align-items: center; gap: 10px; margin: 14px 0 4px; font-size: 13px; cursor: pointer; }
+.vmia-switch input { display: none; }
+.vmia-switch span {
+	width: 40px; height: 22px; border-radius: 22px; background: #334155; position: relative; transition: background .2s;
+}
+.vmia-switch span::after {
+	content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
+	background: #fff; transition: transform .2s;
+}
+.vmia-switch input:checked + span { background: var(--indigo); }
+.vmia-switch input:checked + span::after { transform: translateX(18px); }
+
+/* Buttons ----------------------------------------------------------- */
+.vmia-btn {
+	border: 1px solid var(--line); background: var(--panel-2); color: var(--ink);
+	border-radius: 10px; padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+	transition: transform .1s, box-shadow .15s, background .15s;
+}
+.vmia-btn:hover { transform: translateY(-1px); }
+.vmia-btn-primary { background: linear-gradient(135deg, var(--indigo), #7c3aed); border-color: transparent;
+	box-shadow: 0 6px 20px rgba(99,102,241,.4); }
+.vmia-btn-ghost { background: transparent; }
+.vmia-btn-sm { padding: 6px 12px; font-size: 12px; }
+.vmia-btn[disabled] { opacity: .55; cursor: default; transform: none; }
+
+/* Empty / result ---------------------------------------------------- */
+.vmia-empty { text-align: center; padding: 34px 10px; color: var(--muted); }
+.vmia-empty-ico { display: block; font-size: 34px; margin-bottom: 10px; }
+.vmia-result img { max-width: 100%; border-radius: 12px; border: 1px solid var(--line); }
+.vmia-meta-line { display: flex; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.vmia-meta-line b { color: var(--indigo-2); min-width: 92px; }
+
+/* Log --------------------------------------------------------------- */
+.vmia-log-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 12px; }
+.vmia-log-row:last-child { border-bottom: 0; }
+.vmia-log-kind { text-transform: uppercase; font-size: 10px; letter-spacing: 1px; padding: 2px 7px; border-radius: 6px;
+	background: #1e293b; color: var(--indigo-2); font-weight: 700; }
+.vmia-log-kind.kind-error { color: var(--bad); }
+.vmia-log-kind.kind-generate { color: var(--good); }
+.vmia-log-msg { flex: 1; color: var(--ink); }
+.vmia-log-time { color: var(--muted); }
+
+/* Toast + progress -------------------------------------------------- */
+.vmia-toast {
+	position: fixed; right: 26px; bottom: 26px; z-index: 9999; min-width: 220px; max-width: 360px;
+	background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--indigo);
+	color: var(--ink); padding: 14px 16px; border-radius: 12px; box-shadow: 0 14px 40px rgba(0,0,0,.5);
+	transform: translateY(20px); opacity: 0; pointer-events: none; transition: all .25s; font-size: 13px;
+}
+.vmia-toast.show { transform: translateY(0); opacity: 1; }
+.vmia-toast.ok { border-left-color: var(--good); }
+.vmia-toast.err { border-left-color: var(--bad); }
+
+.vmia-progress { margin: 16px 0; }
+.vmia-progress-bar { height: 8px; background: #1e293b; border-radius: 8px; overflow: hidden; }
+.vmia-progress-bar span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--indigo), #a855f7); transition: width .3s; }
+.vmia-progress-label { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+.vmia-spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.35);
+	border-top-color: #fff; border-radius: 50%; animation: vmia-rot .7s linear infinite; vertical-align: -2px; margin-right: 6px; }
+@keyframes vmia-rot { to { transform: rotate(360deg); } }
+
+/* Bulk Actions ------------------------------------------------------ */
+.vmia-bulk-bar {
+	background: var(--indigo);
+	border-radius: 12px;
+	padding: 12px 20px;
+	margin-bottom: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	color: #fff;
+	box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+}
+.vmia-bulk-info { font-weight: 600; font-size: 14px; }
+.vmia-bulk-actions { display: flex; align-items: center; gap: 10px; }
+.vmia-bulk-bar .vmia-input { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; }
+.vmia-bulk-bar .vmia-btn-ghost { color: #fff; border-color: rgba(255,255,255,0.3); }
+.vmia-bulk-bar .vmia-btn-primary { background: #fff; color: var(--indigo); border: none; }
+
+.vmia-input-sm { padding: 6px 10px; font-size: 12px; height: 32px; }
+
+.vmia-chart-bar { flex: 1; background: var(--indigo); transition: opacity .2s, transform .2s; cursor: help; }
+.vmia-chart-bar:hover { opacity: 1; transform: scaleY(1.05); background: var(--indigo-2); }
+
+/* Custom Datalist Arrow --------------------------------------------- */
+input[list].vmia-input {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238ea0c4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	padding-right: 32px;
+	appearance: none;
+	-webkit-appearance: none;
+}
+input[list].vmia-input::-webkit-calendar-picker-indicator {
+	display: none !important;
+	opacity: 0 !important;
+	-webkit-appearance: none;
+}
+/* For Firefox */
+input[list].vmia-input {
+	background-image: none; /* Let's remove my custom arrow for list inputs to avoid double arrows if the above fails */
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238ea0c4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+}
+
+/* Modal ------------------------------------------------------------- */
+.vmia-modal {
+	position: fixed; inset: 0; background: rgba(0,0,0,.8); backdrop-filter: blur(5px);
+	display: flex; align-items: center; justify-content: center; z-index: 100000; padding: 20px;
+	opacity: 1; visibility: visible; transition: all .2s;
+}
+.vmia-modal[hidden], .vmia-modal.hide {
+	opacity: 0; visibility: hidden; pointer-events: none; display: none !important;
+}
+.vmia-modal-content {
+	background: #0f172a; border: 1px solid var(--line); border-radius: 20px;
+	width: 100%; max-width: 840px; max-height: 90vh; display: flex; flex-direction: column;
+	box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8); overflow: hidden;
+	position: relative;
+}
+.vmia-modal-header {
+	padding: 20px 24px; border-bottom: 1px solid var(--line);
+	display: flex; align-items: center; justify-content: space-between;
+}
+.vmia-modal-header h3 { margin: 0; font-size: 18px; color: #fff; }
+.vmia-modal-close {
+	background: none; border: none; color: var(--muted); font-size: 28px; cursor: pointer; line-height: 1;
+	padding: 0; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px;
+}
+.vmia-modal-close:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.vmia-modal-body { padding: 24px; overflow-y: auto; background: #0b1120; }
+.vmia-modal-grid { display: grid; grid-template-columns: 280px 1fr; gap: 28px; }
+@media (max-width: 768px) { .vmia-modal-grid { grid-template-columns: 1fr; } }
+.vmia-modal-preview img { width: 100%; border-radius: 12px; border: 1px solid var(--line); display: block; background: #000; }
+
+.vmia-modal .vmia-input {
+	background: #0f172a !important;
+	border-color: #22304d;
+	color: #e5edff;
+	margin-bottom: 16px;
+}
+.vmia-modal .vmia-input:focus { background: #131c31 !important; border-color: var(--indigo); }
+
+.vmia-modal-footer {
+	padding: 18px 24px; border-top: 1px solid var(--line);
+	display: flex; align-items: center; gap: 12px; background: #0f172a;
+}
+.vmia-modal-footer .vmia-btn { min-width: 100px; }
