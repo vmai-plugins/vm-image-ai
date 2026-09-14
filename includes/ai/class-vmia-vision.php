@@ -28,14 +28,56 @@ class VMIA_Vision {
 			. ( $hint ? ' Page context: ' . $hint : '' );
 
 		foreach ( (array) VMIA_Settings::get( 'vision_order' ) as $provider ) {
-			$text = 'gemini' === $provider
-				? $this->gemini( $b64, $mime, $instruction )
-				: ( 'openrouter' === $provider ? $this->openrouter( $b64, $mime, $instruction ) : '' );
+			if ( 'openai' === $provider ) {
+				$text = $this->openai( $b64, $mime, $instruction );
+			} elseif ( 'gemini' === $provider ) {
+				$text = $this->gemini( $b64, $mime, $instruction );
+			} elseif ( 'openrouter' === $provider ) {
+				$text = $this->openrouter( $b64, $mime, $instruction );
+			} elseif ( 'omniroute' === $provider ) {
+				$text = $this->omniroute( $b64, $mime, $instruction );
+			} else {
+				$text = '';
+			}
 			if ( '' !== trim( $text ) ) {
 				return trim( $text );
 			}
 		}
 		return '';
+	}
+
+	protected function openai( $b64, $mime, $instruction ) {
+		$key = VMIA_Settings::get( 'openai_key' );
+		if ( ! $key ) {
+			return '';
+		}
+		$model = VMIA_Settings::get( 'openai_model', 'gpt-4o-mini' );
+		$body  = array(
+			'model'      => $model,
+			'max_tokens' => 90,
+			'messages'   => array(
+				array(
+					'role'    => 'user',
+					'content' => array(
+						array( 'type' => 'text', 'text' => $instruction ),
+						array( 'type' => 'image_url', 'image_url' => array( 'url' => "data:{$mime};base64,{$b64}" ) ),
+					),
+				),
+			),
+		);
+		$resp = wp_remote_post( 'https://api.openai.com/v1/chat/completions', array(
+			'timeout' => 60,
+			'headers' => array(
+				'Authorization' => 'Bearer ' . $key,
+				'Content-Type'  => 'application/json',
+			),
+			'body'    => wp_json_encode( $body ),
+		) );
+		if ( is_wp_error( $resp ) ) {
+			return '';
+		}
+		$data = json_decode( wp_remote_retrieve_body( $resp ), true );
+		return (string) ( $data['choices'][0]['message']['content'] ?? '' );
 	}
 
 	protected function gemini( $b64, $mime, $instruction ) {
@@ -95,6 +137,43 @@ class VMIA_Vision {
 				'HTTP-Referer'  => home_url(),
 				'X-Title'       => 'VM Image AI',
 			),
+			'body'    => wp_json_encode( $body ),
+		) );
+		if ( is_wp_error( $resp ) ) {
+			return '';
+		}
+		$data = json_decode( wp_remote_retrieve_body( $resp ), true );
+		return (string) ( $data['choices'][0]['message']['content'] ?? '' );
+	}
+
+	protected function omniroute( $b64, $mime, $instruction ) {
+		$base = rtrim( (string) VMIA_Settings::get( 'omniroute_base' ), '/' );
+		$key  = VMIA_Settings::get( 'omniroute_key' );
+		if ( ! $base ) {
+			return '';
+		}
+		$model = VMIA_Settings::get( 'omniroute_vision_model', 'openai/gpt-4o-mini' );
+		$body  = array(
+			'model'      => $model,
+			'max_tokens' => 90,
+			'messages'   => array(
+				array(
+					'role'    => 'user',
+					'content' => array(
+						array( 'type' => 'text', 'text' => $instruction ),
+						array( 'type' => 'image_url', 'image_url' => array( 'url' => "data:{$mime};base64,{$b64}" ) ),
+					),
+				),
+			),
+		);
+		$headers = array( 'Content-Type' => 'application/json' );
+		if ( $key ) {
+			$headers['Authorization'] = 'Bearer ' . $key;
+		}
+
+		$resp = wp_remote_post( $base . '/chat/completions', array(
+			'timeout' => 60,
+			'headers' => $headers,
 			'body'    => wp_json_encode( $body ),
 		) );
 		if ( is_wp_error( $resp ) ) {

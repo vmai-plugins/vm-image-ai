@@ -42,6 +42,14 @@ class VMIA_Provider_Pollinations {
 		if ( $code < 200 || $code >= 300 ) {
 			return array( 'ok' => false, 'provider' => 'pollinations', 'error' => 'HTTP ' . $code );
 		}
+
+		$img = wp_remote_retrieve_body( $resp );
+		if ( strlen( $img ) > 200 ) {
+			$file = wp_tempnam( 'vmia-pollinations.jpg' );
+			file_put_contents( $file, $img );
+			return array( 'ok' => true, 'path' => $file, 'url' => $url, 'provider' => 'pollinations' );
+		}
+
 		return array( 'ok' => true, 'url' => $url, 'provider' => 'pollinations' );
 	}
 }

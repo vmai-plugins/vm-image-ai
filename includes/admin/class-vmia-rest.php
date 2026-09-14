@@ -66,6 +66,12 @@ class VMIA_Rest {
 			'permission_callback' => $perm,
 		) );
 
+		register_rest_route( self::NS, '/generate-video', array(
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'generate_video' ),
+			'permission_callback' => $perm,
+		) );
+
 		register_rest_route( self::NS, '/bulk-generate-missing', array(
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'bulk_generate_missing' ),
@@ -133,6 +139,12 @@ class VMIA_Rest {
 		register_rest_route( self::NS, '/summary', array(
 			'methods'             => 'GET',
 			'callback'            => array( $this, 'get_summary' ),
+			'permission_callback' => $perm,
+		) );
+
+		register_rest_route( self::NS, '/check-update', array(
+			'methods'             => array( 'GET', 'POST' ),
+			'callback'            => array( $this, 'check_update' ),
 			'permission_callback' => $perm,
 		) );
 	}
@@ -262,6 +274,29 @@ class VMIA_Rest {
 				'set_featured' => $featured,
 				'width'        => $w,
 				'height'       => $h,
+				'title'        => $subject,
+			)
+		);
+		return rest_ensure_response( $res );
+	}
+
+	public function generate_video( WP_REST_Request $r ) {
+		$subject  = sanitize_text_field( (string) $r->get_param( 'subject' ) );
+		$post_id  = (int) $r->get_param( 'post_id' );
+		$featured = (bool) $r->get_param( 'set_featured' );
+
+		if ( '' === $subject && $post_id ) {
+			$subject = get_the_title( $post_id );
+		}
+		if ( '' === $subject ) {
+			return new WP_Error( 'vmia_no_subject', __( 'Please provide a subject or a post.', 'vm-image-ai' ), array( 'status' => 400 ) );
+		}
+
+		$res = ( new VMIA_Video_Router() )->generate_to_library(
+			$subject,
+			array(
+				'post_id'      => $post_id,
+				'set_featured' => $featured,
 				'title'        => $subject,
 			)
 		);
@@ -445,6 +480,11 @@ class VMIA_Rest {
 		);
 	}
 
+	public function check_update() {
+		$res = VMIA_GitHub_Updater::check_for_updates();
+		return rest_ensure_response( $res );
+	}
+
 	/* ------------------------------- sanitising ------------------------ */
 
 	protected function sanitize_settings( $in ) {
@@ -452,6 +492,7 @@ class VMIA_Rest {
 		$text = array(
 			'aipuffer_base', 'aipuffer_key', 'aipuffer_bot_id', 'aipuffer_img_path', 'aipuffer_img_engine',
 			'openai_key', 'openai_model', 'openai_image_model',
+			'omniroute_base', 'omniroute_key', 'omniroute_text_model', 'omniroute_vision_model', 'omniroute_image_model', 'omniroute_video_model',
 			'gemini_key', 'gemini_model', 'gemini_vision_model', 'gemini_image_model',
 			'openrouter_key', 'openrouter_model', 'openrouter_vision',
 			'xai_key', 'xai_model',
@@ -459,7 +500,7 @@ class VMIA_Rest {
 			'huggingface_key', 'huggingface_model',
 			'cloudflare_account_id', 'cloudflare_key', 'cloudflare_model',
 			'pexels_key', 'google_search_key', 'google_search_cx',
-			'locale_hint', 'style_preset',
+			'locale_hint', 'style_preset', 'theme', 'github_token',
 		);
 		foreach ( $text as $k ) {
 			if ( isset( $in[ $k ] ) ) {

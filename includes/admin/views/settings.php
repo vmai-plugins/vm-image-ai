@@ -36,7 +36,7 @@ $list = function ( $key, $arr ) {
 	);
 };
 ?>
-<div class="wrap vmia">
+<div class="wrap vmia" data-theme="<?php echo esc_attr( $s['theme'] ?? 'light' ); ?>">
 	<div class="vmia-topbar">
 		<div class="vmia-brand">
 			<span class="vmia-logo">VM</span>
@@ -46,6 +46,11 @@ $list = function ( $key, $arr ) {
 			</div>
 		</div>
 		<div class="vmia-actions">
+			<div class="vmia-theme-toggle">
+				<button type="button" class="vmia-theme-btn <?php echo ( $s['theme'] ?? 'light' ) === 'light' ? 'active' : ''; ?>" data-theme-set="light" title="<?php esc_attr_e( 'Light mode', 'vm-image-ai' ); ?>">☀️ Light</button>
+				<button type="button" class="vmia-theme-btn <?php echo ( $s['theme'] ?? 'light' ) === 'dark' ? 'active' : ''; ?>" data-theme-set="dark" title="<?php esc_attr_e( 'Dark mode', 'vm-image-ai' ); ?>">🌙 Dark</button>
+				<button type="button" class="vmia-theme-btn <?php echo ( $s['theme'] ?? 'light' ) === 'auto' ? 'active' : ''; ?>" data-theme-set="auto" title="<?php esc_attr_e( 'System preference', 'vm-image-ai' ); ?>">⚙️ Auto</button>
+			</div>
 			<button class="vmia-btn vmia-btn-ghost" id="vmia-sync"><?php esc_html_e( '↻ Sync live models', 'vm-image-ai' ); ?></button>
 			<button class="vmia-btn vmia-btn-primary" id="vmia-save"><?php esc_html_e( 'Save settings', 'vm-image-ai' ); ?></button>
 		</div>
@@ -56,8 +61,23 @@ $list = function ( $key, $arr ) {
 		<!-- Text / vision AI -->
 		<div class="vmia-card">
 			<p class="vmia-card-title"><?php esc_html_e( 'AI text engine (fallback chain)', 'vm-image-ai' ); ?></p>
-			<label class="vmia-label"><?php esc_html_e( 'Provider order', 'vm-image-ai' ); ?> <em><?php esc_html_e( '(aipuffer, openai, gemini, openrouter, xai)', 'vm-image-ai' ); ?></em></label>
+			<label class="vmia-label"><?php esc_html_e( 'Provider order', 'vm-image-ai' ); ?> <em><?php esc_html_e( '(omniroute, aipuffer, openai, gemini, openrouter, xai)', 'vm-image-ai' ); ?></em></label>
 			<?php $list( 'ai_order', $s['ai_order'] ); ?>
+
+			<div class="vmia-subcard">
+				<p class="vmia-subcard-title"><?php esc_html_e( 'OmniRoute (Self-hosted)', 'vm-image-ai' ); ?></p>
+				<div class="vmia-row">
+					<div style="flex:1">
+						<label class="vmia-label"><?php esc_html_e( 'Text Model', 'vm-image-ai' ); ?></label>
+						<input class="vmia-input" type="text" data-key="omniroute_text_model" value="<?php echo esc_attr( $s['omniroute_text_model'] ?? 'openai/gpt-4o-mini' ); ?>" list="vmia-list-omniroute">
+					</div>
+					<div style="flex:1">
+						<label class="vmia-label"><?php esc_html_e( 'Vision Model', 'vm-image-ai' ); ?></label>
+						<input class="vmia-input" type="text" data-key="omniroute_vision_model" value="<?php echo esc_attr( $s['omniroute_vision_model'] ?? 'openai/gpt-4o-mini' ); ?>" list="vmia-list-omniroute">
+					</div>
+				</div>
+				<p class="vmia-muted" style="margin-bottom:0"><?php esc_html_e( 'Configuration is shared with the Image/Video section below.', 'vm-image-ai' ); ?></p>
+			</div>
 
 			<label class="vmia-label">AI Puffer — <?php esc_html_e( 'REST base', 'vm-image-ai' ); ?></label>
 			<?php $text( 'aipuffer_base', $s['aipuffer_base'], home_url( '/wp-json/aipkit/v1' ) ); ?>
@@ -105,6 +125,7 @@ $list = function ( $key, $arr ) {
 			<datalist id="vmia-list-gemini"></datalist>
 			<datalist id="vmia-list-openrouter"></datalist>
 			<datalist id="vmia-list-xai"></datalist>
+			<datalist id="vmia-list-omniroute"></datalist>
 		</div>
 
 		<!-- Vision -->
@@ -131,9 +152,28 @@ $list = function ( $key, $arr ) {
 
 		<!-- Image engine -->
 		<div class="vmia-card">
-			<p class="vmia-card-title"><?php esc_html_e( 'Image generation engine (fallback chain)', 'vm-image-ai' ); ?></p>
-			<label class="vmia-label"><?php esc_html_e( 'Provider order', 'vm-image-ai' ); ?> <em><?php esc_html_e( '(aipuffer, google, openai, pollinations, huggingface, cloudflare, google_search, pexels)', 'vm-image-ai' ); ?></em></label>
+			<p class="vmia-card-title"><?php esc_html_e( 'Image & Video generation engine', 'vm-image-ai' ); ?></p>
+			<label class="vmia-label"><?php esc_html_e( 'Image Provider order', 'vm-image-ai' ); ?> <em><?php esc_html_e( '(omniroute, aipuffer, google, openai, pollinations, huggingface, cloudflare, google_search, pexels)', 'vm-image-ai' ); ?></em></label>
 			<?php $list( 'image_order', $s['image_order'] ); ?>
+
+			<div class="vmia-subcard">
+				<p class="vmia-subcard-title"><?php esc_html_e( 'OmniRoute (Self-hosted)', 'vm-image-ai' ); ?></p>
+				<label class="vmia-label"><?php esc_html_e( 'Base URL', 'vm-image-ai' ); ?></label>
+				<?php $text( 'omniroute_base', $s['omniroute_base'] ?? '', 'http://localhost:20128/v1' ); ?>
+				<label class="vmia-label"><?php esc_html_e( 'API Key (Optional)', 'vm-image-ai' ); ?></label>
+				<?php $text( 'omniroute_key', $s['omniroute_key'] ?? '', 'sk-...', 'password' ); ?>
+				<div class="vmia-row">
+					<div style="flex:1">
+						<label class="vmia-label"><?php esc_html_e( 'Image Model', 'vm-image-ai' ); ?></label>
+						<input class="vmia-input" type="text" data-key="omniroute_image_model" value="<?php echo esc_attr( $s['omniroute_image_model'] ?? 'cheaperinference/grok-imagine' ); ?>" list="vmia-list-omniroute">
+					</div>
+					<div style="flex:1">
+						<label class="vmia-label"><?php esc_html_e( 'Video Model', 'vm-image-ai' ); ?></label>
+						<input class="vmia-input" type="text" data-key="omniroute_video_model" value="<?php echo esc_attr( $s['omniroute_video_model'] ?? 'novita/video-model-name' ); ?>" list="vmia-list-omniroute">
+					</div>
+				</div>
+				<p class="vmia-muted"><?php esc_html_e( 'OmniRoute is a unified OpenAI-compatible API for various media providers.', 'vm-image-ai' ); ?></p>
+			</div>
 
 			<label class="vmia-label">Google Imagen — <?php esc_html_e( 'Model (or "auto")', 'vm-image-ai' ); ?> <em>(uses Gemini API key)</em></label>
 			<input class="vmia-input" type="text" data-key="gemini_image_model" value="<?php echo esc_attr( $s['gemini_image_model'] ); ?>" list="vmia-list-gemini" placeholder="auto">
@@ -220,6 +260,32 @@ $list = function ( $key, $arr ) {
 			<?php $text( 'god_fix_batch', $s['god_fix_batch'], '15', 'number' ); ?>
 			<label class="vmia-label"><?php esc_html_e( 'Post types to audit', 'vm-image-ai' ); ?> <em>(post, page)</em></label>
 			<?php $list( 'scan_post_types', $s['scan_post_types'] ); ?>
+
+			<p class="vmia-card-title vmia-mt"><?php esc_html_e( 'Interface Theme', 'vm-image-ai' ); ?></p>
+			<label class="vmia-label"><?php esc_html_e( 'Color Mode', 'vm-image-ai' ); ?></label>
+			<select class="vmia-input" data-key="theme" id="vmia-setting-theme">
+				<option value="light" <?php selected( $s['theme'] ?? 'light', 'light' ); ?>><?php esc_html_e( 'Light (Seamless WP Admin)', 'vm-image-ai' ); ?></option>
+				<option value="dark" <?php selected( $s['theme'] ?? 'light', 'dark' ); ?>><?php esc_html_e( 'Dark (Titan Dark)', 'vm-image-ai' ); ?></option>
+				<option value="auto" <?php selected( $s['theme'] ?? 'light', 'auto' ); ?>><?php esc_html_e( 'Auto (System Preference)', 'vm-image-ai' ); ?></option>
+			</select>
+
+			<p class="vmia-card-title vmia-mt"><?php esc_html_e( 'GitHub Online Updates', 'vm-image-ai' ); ?></p>
+			<div class="vmia-subcard" style="margin-top:8px;">
+				<div class="vmia-meta-line" style="padding-top:0;">
+					<b><?php esc_html_e( 'Installed', 'vm-image-ai' ); ?>:</b>
+					<span>v<?php echo esc_html( VMIA_VERSION ); ?></span>
+				</div>
+				<div class="vmia-meta-line">
+					<b><?php esc_html_e( 'Repository', 'vm-image-ai' ); ?>:</b>
+					<span><a href="https://github.com/vmai-plugins/vm-image-ai" target="_blank" style="color:var(--indigo-2); text-decoration:none;">vmai-plugins/vm-image-ai ↗</a></span>
+				</div>
+				<label class="vmia-label" style="margin-top:10px;"><?php esc_html_e( 'GitHub Token (Optional for private repos/rate limit)', 'vm-image-ai' ); ?></label>
+				<?php $text( 'github_token', $s['github_token'] ?? '', 'ghp_...', 'password' ); ?>
+				<div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+					<button type="button" class="vmia-btn vmia-btn-ghost vmia-btn-sm" id="vmia-check-github-update"><?php esc_html_e( '🔄 Check for Updates Now', 'vm-image-ai' ); ?></button>
+				</div>
+				<div id="vmia-github-update-result" style="margin-top:10px;"></div>
+			</div>
 		</div>
 	</div>
 

@@ -20,8 +20,8 @@ class VMIA_Settings {
 	public static function defaults() {
 		return array(
 			// -- Text/vision AI engine (fallback chain, first success wins) --
-			'ai_order'            => array( 'aipuffer', 'openai', 'gemini', 'openrouter' ),
-			'vision_order'        => array( 'openai', 'gemini', 'openrouter' ),
+			'ai_order'            => array( 'omniroute', 'aipuffer', 'openai', 'gemini', 'openrouter' ),
+			'vision_order'        => array( 'omniroute', 'openai', 'gemini', 'openrouter' ),
 
 			// AI Puffer (AIPKit) — talks to its own REST API on this site.
 			'aipuffer_base'       => rtrim( home_url(), '/' ) . '/wp-json/aipkit/v1',
@@ -42,12 +42,20 @@ class VMIA_Settings {
 			'openrouter_model'    => 'auto',                     // "auto" = live-sync pick.
 			'openrouter_vision'   => 'auto',
 
+			// OmniRoute.
+			'omniroute_base'      => 'http://localhost:20128/v1',
+			'omniroute_key'       => '',
+			'omniroute_text_model' => 'openai/gpt-4o-mini',
+			'omniroute_vision_model' => 'openai/gpt-4o-mini',
+			'omniroute_image_model' => 'cheaperinference/grok-imagine',
+			'omniroute_video_model' => 'novita/video-model-name',
+
 			// xAI (Grok).
 			'xai_key'             => '',
 			'xai_model'           => 'grok-2-latest',
 
 			// -- Image generation engine (fallback chain) --
-			'image_order'         => array( 'aipuffer', 'google', 'openai', 'pollinations', 'huggingface', 'cloudflare', 'pexels' ),
+			'image_order'         => array( 'omniroute', 'aipuffer', 'google', 'openai', 'pollinations', 'huggingface', 'cloudflare', 'pexels' ),
 
 			// Google Imagen (via Gemini API).
 			'gemini_image_model'  => 'imagen-3.0-generate-001',
@@ -110,6 +118,10 @@ class VMIA_Settings {
 			'god_fix_batch'       => 15,                           // items per God Fix batch.
 			'autopilot_enabled'   => false,                        // automatically fix issues in background.
 			'scan_post_types'     => array( 'post', 'page' ),
+
+			// -- UI Theme & Updates --
+			'theme'               => 'light',                      // light | dark | auto
+			'github_token'        => '',                           // optional GitHub token
 		);
 	}
 
@@ -155,6 +167,13 @@ class VMIA_Settings {
 	 * @return bool
 	 */
 	public static function has_text_ai() {
-		return self::get( 'aipuffer_key' ) || self::get( 'gemini_key' ) || self::get( 'openrouter_key' );
+		return (bool) (
+			self::get( 'openai_key' ) ||
+			self::get( 'omniroute_base' ) ||
+			self::get( 'aipuffer_key' ) ||
+			self::get( 'gemini_key' ) ||
+			self::get( 'openrouter_key' ) ||
+			self::get( 'xai_key' )
+		);
 	}
 }

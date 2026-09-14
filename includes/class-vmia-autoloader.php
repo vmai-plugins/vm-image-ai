@@ -21,6 +21,7 @@ class VMIA_Autoloader {
 		'VMIA_Settings'        => 'class-vmia-settings.php',
 		'VMIA_Logger'          => 'class-vmia-logger.php',
 		'VMIA_HTTP'            => 'class-vmia-http.php',
+		'VMIA_GitHub_Updater'  => 'class-vmia-github-updater.php',
 
 		// AI (text + vision).
 		'VMIA_AI_Router'       => 'ai/class-vmia-ai-router.php',
@@ -31,6 +32,8 @@ class VMIA_Autoloader {
 
 		// Image generation.
 		'VMIA_Image_Router'    => 'image/class-vmia-image-router.php',
+		'VMIA_Video_Router'    => 'image/class-vmia-video-router.php',
+		'VMIA_Provider_Omniroute'    => 'image/class-vmia-omniroute.php',
 		'VMIA_Provider_Pollinations' => 'image/class-vmia-pollinations.php',
 		'VMIA_Provider_Google'       => 'image/class-vmia-google.php',
 		'VMIA_Provider_Google_Search' => 'image/class-vmia-google-search.php',

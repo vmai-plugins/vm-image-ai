@@ -21,13 +21,16 @@ class VMIA_Provider_Audit {
 		$results = array();
 
 		$providers = array(
-			'pollinations' => 'VMIA_Provider_Pollinations',
-			'google'       => 'VMIA_Provider_Google',
-			'huggingface'  => 'VMIA_Provider_Huggingface',
-			'cloudflare'   => 'VMIA_Provider_Cloudflare',
-			'comfyui'      => 'VMIA_Provider_Comfyui',
-			'pexels'       => 'VMIA_Provider_Pexels',
-			'aipuffer'     => 'VMIA_Provider_Aipuffer',
+			'omniroute'     => 'VMIA_Provider_Omniroute',
+			'openai'        => 'VMIA_Provider_Openai',
+			'google'        => 'VMIA_Provider_Google',
+			'pollinations'  => 'VMIA_Provider_Pollinations',
+			'huggingface'   => 'VMIA_Provider_Huggingface',
+			'cloudflare'    => 'VMIA_Provider_Cloudflare',
+			'comfyui'       => 'VMIA_Provider_Comfyui',
+			'pexels'        => 'VMIA_Provider_Pexels',
+			'google_search' => 'VMIA_Provider_Google_Search',
+			'aipuffer'      => 'VMIA_Provider_Aipuffer',
 		);
 
 		foreach ( $providers as $name => $class ) {

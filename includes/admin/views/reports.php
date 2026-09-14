@@ -9,13 +9,20 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<div class="wrap vmia">
+<div class="wrap vmia" data-theme="<?php echo esc_attr( VMIA_Settings::get( 'theme', 'light' ) ); ?>">
 	<div class="vmia-topbar">
 		<div class="vmia-brand">
 			<span class="vmia-logo">VM</span>
 			<div>
 				<h1><?php esc_html_e( 'Performance Reports', 'vm-image-ai' ); ?></h1>
 				<p class="vmia-sub"><?php esc_html_e( 'Track your SEO health and optimization wins over time', 'vm-image-ai' ); ?></p>
+			</div>
+		</div>
+		<div class="vmia-actions">
+			<div class="vmia-theme-toggle">
+				<button type="button" class="vmia-theme-btn <?php echo VMIA_Settings::get( 'theme', 'light' ) === 'light' ? 'active' : ''; ?>" data-theme-set="light" title="<?php esc_attr_e( 'Light mode', 'vm-image-ai' ); ?>">☀️</button>
+				<button type="button" class="vmia-theme-btn <?php echo VMIA_Settings::get( 'theme', 'light' ) === 'dark' ? 'active' : ''; ?>" data-theme-set="dark" title="<?php esc_attr_e( 'Dark mode', 'vm-image-ai' ); ?>">🌙</button>
+				<button type="button" class="vmia-theme-btn <?php echo VMIA_Settings::get( 'theme', 'light' ) === 'auto' ? 'active' : ''; ?>" data-theme-set="auto" title="<?php esc_attr_e( 'System preference', 'vm-image-ai' ); ?>">⚙️</button>
 			</div>
 		</div>
 	</div>

@@ -16,7 +16,7 @@ $open   = array_sum( $summary );
 $labels = VMIA_Auditor::ISSUES;
 $grade  = $score >= 90 ? 'A' : ( $score >= 75 ? 'B' : ( $score >= 55 ? 'C' : ( $score >= 35 ? 'D' : 'F' ) ) );
 ?>
-<div class="wrap vmia">
+<div class="wrap vmia" data-theme="<?php echo esc_attr( VMIA_Settings::get( 'theme', 'light' ) ); ?>">
 	<div class="vmia-topbar">
 		<div class="vmia-brand">
 			<span class="vmia-logo">VM</span>
@@ -26,11 +26,18 @@ $grade  = $score >= 90 ? 'A' : ( $score >= 75 ? 'B' : ( $score >= 55 ? 'C' : ( $
 			</div>
 		</div>
 		<div class="vmia-actions">
+			<div class="vmia-theme-toggle">
+				<button type="button" class="vmia-theme-btn <?php echo VMIA_Settings::get( 'theme', 'light' ) === 'light' ? 'active' : ''; ?>" data-theme-set="light" title="<?php esc_attr_e( 'Light mode', 'vm-image-ai' ); ?>">☀️</button>
+				<button type="button" class="vmia-theme-btn <?php echo VMIA_Settings::get( 'theme', 'light' ) === 'dark' ? 'active' : ''; ?>" data-theme-set="dark" title="<?php esc_attr_e( 'Dark mode', 'vm-image-ai' ); ?>">🌙</button>
+				<button type="button" class="vmia-theme-btn <?php echo VMIA_Settings::get( 'theme', 'light' ) === 'auto' ? 'active' : ''; ?>" data-theme-set="auto" title="<?php esc_attr_e( 'System preference', 'vm-image-ai' ); ?>">⚙️</button>
+			</div>
 			<button class="vmia-btn vmia-btn-ghost" id="vmia-autopilot-run"><?php esc_html_e( '🚀 Run Autopilot', 'vm-image-ai' ); ?></button>
 			<button class="vmia-btn vmia-btn-ghost" id="vmia-scan"><?php esc_html_e( 'Run Full Scan', 'vm-image-ai' ); ?></button>
 			<button class="vmia-btn vmia-btn-primary" id="vmia-godfix"><?php esc_html_e( '⚡ God Fix', 'vm-image-ai' ); ?></button>
 		</div>
 	</div>
+
+	<div id="vmia-update-banner-container"></div>
 
 	<div class="vmia-grid vmia-grid-3">
 		<div class="vmia-card vmia-score">
@@ -66,16 +73,18 @@ $grade  = $score >= 90 ? 'A' : ( $score >= 75 ? 'B' : ( $score >= 55 ? 'C' : ( $
 			<?php
 			$autopilot = VMIA_Settings::get( 'autopilot_enabled' );
 			$providers = array(
-				'Autopilot'  => $autopilot,
-				'OpenAI'     => (bool) VMIA_Settings::get( 'openai_key' ),
-				'Gemini'     => (bool) VMIA_Settings::get( 'gemini_key' ),
-				'OpenRouter' => (bool) VMIA_Settings::get( 'openrouter_key' ),
+				'Autopilot'     => $autopilot,
+				'OmniRoute'     => (bool) VMIA_Settings::get( 'omniroute_base' ),
+				'OpenAI'        => (bool) VMIA_Settings::get( 'openai_key' ),
+				'Gemini'        => (bool) VMIA_Settings::get( 'gemini_key' ),
+				'OpenRouter'    => (bool) VMIA_Settings::get( 'openrouter_key' ),
+				'xAI (Grok)'    => (bool) VMIA_Settings::get( 'xai_key' ),
 				'Google Imagen' => (bool) VMIA_Settings::get( 'gemini_key' ),
-				'Pollinations' => true,
-				'Hugging Face' => (bool) VMIA_Settings::get( 'huggingface_key' ),
-				'Cloudflare' => (bool) VMIA_Settings::get( 'cloudflare_key' ),
-				'ComfyUI'    => (bool) VMIA_Settings::get( 'comfyui_base' ),
-				'Pexels'     => (bool) VMIA_Settings::get( 'pexels_key' ),
+				'Pollinations'  => true,
+				'Hugging Face'  => (bool) VMIA_Settings::get( 'huggingface_key' ),
+				'Cloudflare'    => (bool) VMIA_Settings::get( 'cloudflare_key' ),
+				'ComfyUI'       => (bool) VMIA_Settings::get( 'comfyui_base' ),
+				'Pexels'        => (bool) VMIA_Settings::get( 'pexels_key' ),
 				'Google Search' => (bool) VMIA_Settings::get( 'google_search_key' ),
 			);
 

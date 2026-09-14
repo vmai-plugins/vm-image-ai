@@ -66,6 +66,10 @@ class VMIA_Fixer {
 				$result = $this->fix_content_alts( (int) $row['post_id'] );
 				break;
 
+			case 'content_404':
+				$result = $this->fix_content_404( (int) $row['post_id'] );
+				break;
+
 			case 'broken_file':
 				$result = $this->regenerate_image_for_audit( (int) $row['id'] );
 				break;
@@ -147,6 +151,64 @@ class VMIA_Fixer {
 			return array( 'ok' => true, 'message' => sprintf( 'Added alt to %d image(s)', $fixed ) );
 		}
 		return array( 'ok' => true, 'message' => 'Nothing to change' );
+	}
+
+	/**
+	 * Replace dead/missing in-content <img> src attributes with a freshly
+	 * generated AI image, re-verifying each one at fix time since the audit
+	 * row doesn't track individual URLs.
+	 */
+	protected function fix_content_404( $post_id ) {
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return array( 'ok' => false, 'message' => 'no post' );
+		}
+
+		$content = $post->post_content;
+		$title   = get_the_title( $post_id );
+		$auditor = new VMIA_Auditor();
+		$router  = new VMIA_Image_Router();
+		$fixed   = 0;
+		$failed  = 0;
+
+		$content = preg_replace_callback(
+			'/<img\b[^>]*>/i',
+			function ( $m ) use ( &$fixed, &$failed, $title, $post_id, $auditor, $router ) {
+				$tag = $m[0];
+				if ( ! preg_match( '/\bsrc\s*=\s*(["\'])(.*?)\1/i', $tag, $sm ) ) {
+					return $tag;
+				}
+				if ( ! $auditor->url_is_broken( $sm[2] ) ) {
+					return $tag; // Still fine.
+				}
+
+				preg_match( '/\balt\s*=\s*(["\'])(.*?)\1/i', $tag, $am );
+				$subject = ! empty( $am[2] ) ? $am[2] : $title;
+
+				$res = $router->generate_to_library( $subject, array(
+					'post_id' => $post_id,
+					'title'   => $subject,
+				) );
+
+				if ( empty( $res['ok'] ) ) {
+					$failed++;
+					return $tag; // Leave in place; will resurface on the next scan.
+				}
+
+				$fixed++;
+				return preg_replace( '/\bsrc\s*=\s*(["\']).*?\1/i', 'src="' . esc_url( $res['url'] ) . '"', $tag, 1 );
+			},
+			$content
+		);
+
+		if ( $fixed > 0 ) {
+			wp_update_post( array( 'ID' => $post_id, 'post_content' => $content ) );
+			return $failed > 0
+				? array( 'ok' => true, 'message' => sprintf( 'Replaced %d broken image(s); %d could not be regenerated', $fixed, $failed ) )
+				: array( 'ok' => true, 'message' => sprintf( 'Replaced %d broken image(s) with new AI generation', $fixed ) );
+		}
+
+		return array( 'ok' => false, 'message' => 'Could not regenerate broken image(s)' );
 	}
 
 	/**
@@ -248,6 +310,8 @@ class VMIA_Fixer {
 			if ( 'fix' === $action ) {
 				if ( 'broken_file' === $row['issue_code'] ) {
 					$res = $this->regenerate_image_for_audit( (int) $id );
+				} elseif ( 'content_404' === $row['issue_code'] ) {
+					$res = $this->fix_content_404( (int) $row['post_id'] );
 				} else {
 					$post_id = (int) wp_get_post_parent_id( $obj_id );
 					( new VMIA_SEO_Writer() )->write_for_attachment( $obj_id, $post_id, array( 'overwrite' => true ) );

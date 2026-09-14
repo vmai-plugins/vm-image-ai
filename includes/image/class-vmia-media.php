@@ -76,6 +76,9 @@ class VMIA_Media {
 					'image/png'  => 'png',
 					'image/gif'  => 'gif',
 					'image/webp' => 'webp',
+					'video/mp4'  => 'mp4',
+					'video/webm' => 'webm',
+					'video/quicktime' => 'mov',
 				);
 				$type = $mime_to_ext[ $img_info['mime'] ] ?? '';
 			}
@@ -83,7 +86,7 @@ class VMIA_Media {
 
 		if ( $type ) {
 			$ext = $type;
-		} elseif ( $src_url && preg_match( '/\.(png|jpe?g|webp|gif)/i', $src_url, $m ) ) {
+		} elseif ( $src_url && preg_match( '/\.(png|jpe?g|webp|gif|mp4|webm|mov)/i', $src_url, $m ) ) {
 			$ext = strtolower( $m[1] );
 		}
 

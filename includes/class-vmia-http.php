@@ -44,7 +44,20 @@ class VMIA_HTTP {
 
 		if ( $code >= 400 ) {
 			$err = json_decode( $data, true );
-			$msg = $err['error']['message'] ?? ( $err['message'] ?? 'HTTP ' . $code );
+			$msg = 'HTTP ' . $code;
+			if ( is_array( $err ) ) {
+				if ( ! empty( $err['error']['message'] ) ) {
+					$msg = (string) $err['error']['message'];
+				} elseif ( ! empty( $err['error'] ) && is_string( $err['error'] ) ) {
+					$msg = (string) $err['error'];
+				} elseif ( ! empty( $err['errors'][0]['message'] ) ) {
+					$msg = (string) $err['errors'][0]['message'];
+				} elseif ( ! empty( $err['message'] ) && is_string( $err['message'] ) ) {
+					$msg = (string) $err['message'];
+				} elseif ( ! empty( $err['detail'] ) && is_string( $err['detail'] ) ) {
+					$msg = (string) $err['detail'];
+				}
+			}
 			return new WP_Error( 'http_' . $code, $msg, array( 'body' => $data ) );
 		}
 

@@ -43,6 +43,7 @@
 		populate( 'vmia-list-huggingface', catalogue.huggingface );
 		populate( 'vmia-list-cloudflare', catalogue.cloudflare );
 		populate( 'vmia-list-xai', catalogue.xai );
+		populate( 'vmia-list-omniroute', catalogue.omniroute );
 		populate( 'vmia-list-aipuffer', catalogue.aipuffer );
 	}
 
@@ -56,6 +57,39 @@
 			btn.disabled = false;
 			if ( btn._html ) btn.innerHTML = btn._html;
 		}
+	}
+
+	/* ---- Theme Engine ---- */
+	function bindTheme() {
+		const savedTheme = localStorage.getItem( 'vmia_theme' ) || ( window.VMIA && VMIA.theme ) || 'light';
+		applyTheme( savedTheme );
+
+		document.addEventListener( 'click', ( e ) => {
+			const btn = e.target.closest( '[data-theme-set]' );
+			if ( ! btn ) return;
+			const theme = btn.dataset.themeSet;
+			applyTheme( theme );
+			localStorage.setItem( 'vmia_theme', theme );
+			const selectEl = document.getElementById( 'vmia-setting-theme' );
+			if ( selectEl ) selectEl.value = theme;
+			toast( 'Theme set to ' + theme );
+		} );
+
+		const selectEl = document.getElementById( 'vmia-setting-theme' );
+		if ( selectEl ) {
+			selectEl.addEventListener( 'change', () => {
+				const theme = selectEl.value;
+				applyTheme( theme );
+				localStorage.setItem( 'vmia_theme', theme );
+			} );
+		}
+	}
+
+	function applyTheme( theme ) {
+		document.querySelectorAll( '.vmia' ).forEach( el => el.setAttribute( 'data-theme', theme ) );
+		document.querySelectorAll( '[data-theme-set]' ).forEach( btn => {
+			btn.classList.toggle( 'active', btn.dataset.themeSet === theme );
+		} );
 	}
 
 	/* ---- Scan ---- */
@@ -182,39 +216,6 @@
 				busy( btn, false );
 			}
 		} );
-
-		const bulkGenMissing = document.getElementById( 'vmia-bulk-generate-missing' );
-		if ( bulkGenMissing ) {
-			bulkGenMissing.addEventListener( 'click', async () => {
-				const prog = document.getElementById( 'vmia-gen-progress' );
-				const bar = prog ? prog.querySelector( 'span' ) : null;
-				const lbl = prog ? prog.querySelector( '.vmia-progress-label' ) : null;
-				if ( prog ) {
-					prog.hidden = false;
-					bar.style.width = '20%';
-					lbl.textContent = 'Scanning for missing images...';
-				}
-
-				busy( bulkGenMissing, true, 'Generating batch…' );
-				try {
-					const r = await api( '/bulk-generate-missing' );
-					if ( r.count > 0 ) {
-						if ( bar ) bar.style.width = '100%';
-						if ( lbl ) lbl.textContent = `Success: Generated ${ r.count } images`;
-						toast( `Generated ${ r.count } featured images` );
-						setTimeout( () => location.reload(), 1500 );
-					} else {
-						if ( prog ) prog.hidden = true;
-						toast( r.message || 'No images to generate', 'err' );
-					}
-				} catch ( e ) {
-					if ( prog ) prog.hidden = true;
-					toast( 'Bulk generation failed: ' + e.message, 'err' );
-				} finally {
-					busy( bulkGenMissing, false );
-				}
-			} );
-		}
 	}
 
 	async function openFixModal( id, btn ) {
@@ -343,21 +344,34 @@
 	function bindGenerate() {
 		const btn = document.getElementById( 'vmia-generate' );
 		if ( ! btn ) return;
+
+		const mediaTypeSelector = document.getElementById( 'vmia-media-type' );
+		const imageOptions = document.getElementById( 'vmia-image-options' );
+
+		if ( mediaTypeSelector && imageOptions ) {
+			mediaTypeSelector.addEventListener( 'change', () => {
+				imageOptions.hidden = ( mediaTypeSelector.value !== 'image' );
+			} );
+		}
+
 		btn.addEventListener( 'click', async () => {
+			const mediaType = mediaTypeSelector ? mediaTypeSelector.value : 'image';
 			const subject = document.getElementById( 'vmia-subject' ).value.trim();
 			const post_id = parseInt( document.getElementById( 'vmia-post' ).value, 10 ) || 0;
 			const mode = document.getElementById( 'vmia-mode' ).value;
 			const set_featured = document.getElementById( 'vmia-featured' ).checked;
+
 			if ( ! subject && ! post_id ) {
 				toast( 'Enter a subject or pick a post', 'err' );
 				return;
 			}
 			busy( btn, true, 'Generating…' );
 			try {
-				const r = await api( '/generate', { subject, post_id, mode, set_featured } );
+				const path = mediaType === 'video' ? '/generate-video' : '/generate';
+				const r = await api( path, { subject, post_id, mode, set_featured } );
 				if ( r.ok ) {
-					renderResult( r );
-					toast( 'Image generated via ' + r.provider );
+					renderResult( r, mediaType );
+					toast( ( mediaType === 'video' ? 'Video' : 'Image' ) + ' generated via ' + r.provider );
 				} else {
 					toast( 'Generation failed: ' + ( r.error || 'unknown' ), 'err' );
 				}
@@ -367,49 +381,61 @@
 				busy( btn, false );
 			}
 		} );
-
-		const bulkGenMissing = document.getElementById( 'vmia-bulk-generate-missing' );
-		if ( bulkGenMissing ) {
-			bulkGenMissing.addEventListener( 'click', async () => {
-				const prog = document.getElementById( 'vmia-gen-progress' );
-				const bar = prog ? prog.querySelector( 'span' ) : null;
-				const lbl = prog ? prog.querySelector( '.vmia-progress-label' ) : null;
-				if ( prog ) {
-					prog.hidden = false;
-					bar.style.width = '20%';
-					lbl.textContent = 'Scanning for missing images...';
-				}
-
-				busy( bulkGenMissing, true, 'Generating batch…' );
-				try {
-					const r = await api( '/bulk-generate-missing' );
-					if ( r.count > 0 ) {
-						if ( bar ) bar.style.width = '100%';
-						if ( lbl ) lbl.textContent = `Success: Generated ${ r.count } images`;
-						toast( `Generated ${ r.count } featured images` );
-						setTimeout( () => location.reload(), 1500 );
-					} else {
-						if ( prog ) prog.hidden = true;
-						toast( r.message || 'No images to generate', 'err' );
-					}
-				} catch ( e ) {
-					if ( prog ) prog.hidden = true;
-					toast( 'Bulk generation failed: ' + e.message, 'err' );
-				} finally {
-					busy( bulkGenMissing, false );
-				}
-			} );
-		}
 	}
 
-	function renderResult( r ) {
+	function bindBulkGenerateMissing() {
+		const bulkGenMissing = document.getElementById( 'vmia-bulk-generate-missing' );
+		if ( ! bulkGenMissing ) return;
+
+		bulkGenMissing.addEventListener( 'click', async () => {
+			const prog = document.getElementById( 'vmia-gen-progress' );
+			const bar = prog ? prog.querySelector( 'span' ) : null;
+			const lbl = prog ? prog.querySelector( '.vmia-progress-label' ) : null;
+			if ( prog ) {
+				prog.hidden = false;
+				bar.style.width = '20%';
+				lbl.textContent = 'Scanning for missing images...';
+			}
+
+			busy( bulkGenMissing, true, 'Generating batch…' );
+			try {
+				const r = await api( '/bulk-generate-missing' );
+				if ( r.count > 0 ) {
+					if ( bar ) bar.style.width = '100%';
+					if ( lbl ) lbl.textContent = `Success: Generated ${ r.count } images`;
+					toast( `Generated ${ r.count } featured images` );
+					setTimeout( () => location.reload(), 1500 );
+				} else {
+					if ( prog ) prog.hidden = true;
+					toast( r.message || 'No images to generate', 'err' );
+				}
+			} catch ( e ) {
+				if ( prog ) prog.hidden = true;
+				toast( 'Bulk generation failed: ' + e.message, 'err' );
+			} finally {
+				busy( bulkGenMissing, false );
+			}
+		} );
+	}
+
+	function renderResult( r, type = 'image' ) {
 		const box = document.getElementById( 'vmia-result' );
 		if ( ! box ) return;
+
+		let mediaHtml = '';
+		if ( type === 'video' ) {
+			mediaHtml = `<video src="${ r.url }" controls style="width:100%; border-radius:8px;"></video>`;
+		} else {
+			mediaHtml = `<img src="${ r.url }?t=${ Date.now() }" alt="generated preview">`;
+		}
+
 		box.innerHTML =
-			`<img src="${ r.url }?t=${ Date.now() }" alt="generated preview">` +
+			mediaHtml +
 			`<div class="vmia-meta-line"><b>Provider</b><span>${ r.provider }</span></div>` +
 			`<div class="vmia-meta-line"><b>Attachment</b><span>#${ r.attach_id }</span></div>` +
-			`<p class="vmia-muted vmia-mt">Alt / title / caption / description were written automatically and the image was resized &amp; compressed to spec.</p>`;
+			`<p class="vmia-muted vmia-mt">` +
+			( type === 'image' ? `Alt / title / caption / description were written automatically and the image was resized &amp; compressed to spec.` : `The video was imported into your media library.` ) +
+			`</p>`;
 	}
 
 	/* ---- Quick actions in media modal ---- */
@@ -511,8 +537,6 @@
 			try {
 				const r = await api( '/aipuffer/test', payload );
 
-				// Auto-fix the base URL if discovery found it at a different path
-				// (e.g. user entered domain but forgot /wp-json/aipkit/v1)
 				if ( r.real_base && r.real_base !== payload.base ) {
 					const baseEl = document.querySelector( '[data-key="aipuffer_base"]' );
 					if ( baseEl ) {
@@ -548,61 +572,66 @@
 				busy( btn, false );
 			}
 		} );
+	}
 
-		const bulkGenMissing = document.getElementById( 'vmia-bulk-generate-missing' );
-		if ( bulkGenMissing ) {
-			bulkGenMissing.addEventListener( 'click', async () => {
-				const prog = document.getElementById( 'vmia-gen-progress' );
-				const bar = prog ? prog.querySelector( 'span' ) : null;
-				const lbl = prog ? prog.querySelector( '.vmia-progress-label' ) : null;
-				if ( prog ) {
-					prog.hidden = false;
-					bar.style.width = '20%';
-					lbl.textContent = 'Scanning for missing images...';
-				}
+	/* ---- GitHub Updater ---- */
+	function bindGitHubUpdater() {
+		const checkBtn = document.getElementById( 'vmia-check-github-update' );
+		const resultBox = document.getElementById( 'vmia-github-update-result' );
+		const bannerContainer = document.getElementById( 'vmia-update-banner-container' );
 
-				busy( bulkGenMissing, true, 'Generating batch…' );
+		const renderUpdate = ( r, container ) => {
+			if ( ! container ) return;
+			if ( r.has_update ) {
+				container.innerHTML = `
+					<div class="vmia-update-banner">
+						<div class="vmia-update-text">
+							<span class="vmia-update-badge">Update Available</span>
+							<span><strong>v${ r.new_version }</strong> is available! (Current: v${ r.current_version })</span>
+						</div>
+						<div style="display:flex; gap:10px; align-items:center;">
+							<a href="${ r.release_url }" target="_blank" class="vmia-btn vmia-btn-ghost vmia-btn-sm">Changelog ↗</a>
+							<a href="${ r.update_url }" class="vmia-btn vmia-btn-primary vmia-btn-sm">Update Now</a>
+						</div>
+					</div>
+				`;
+			} else {
+				container.innerHTML = `<p class="vmia-muted" style="color:var(--good); margin:6px 0;">✓ You are on the latest version (v${ r.current_version }).</p>`;
+			}
+		};
+
+		if ( checkBtn ) {
+			checkBtn.addEventListener( 'click', async () => {
+				busy( checkBtn, true, 'Checking…' );
 				try {
-					const r = await api( '/bulk-generate-missing' );
-					if ( r.count > 0 ) {
-						if ( bar ) bar.style.width = '100%';
-						if ( lbl ) lbl.textContent = `Success: Generated ${ r.count } images`;
-						toast( `Generated ${ r.count } featured images` );
-						setTimeout( () => location.reload(), 1500 );
+					const r = await api( '/check-update', {}, 'GET' );
+					if ( r.ok ) {
+						renderUpdate( r, resultBox );
+						if ( r.has_update ) {
+							toast( `Update v${ r.new_version } available!` );
+						} else {
+							toast( `Up to date (v${ r.current_version })` );
+						}
 					} else {
-						if ( prog ) prog.hidden = true;
-						toast( r.message || 'No images to generate', 'err' );
+						toast( r.message || 'Check failed', 'err' );
 					}
 				} catch ( e ) {
-					if ( prog ) prog.hidden = true;
-					toast( 'Bulk generation failed: ' + e.message, 'err' );
+					toast( 'Update check failed: ' + ( e.message || e ), 'err' );
 				} finally {
-					busy( bulkGenMissing, false );
+					busy( checkBtn, false );
 				}
 			} );
 		}
-	}
 
-	document.addEventListener( 'DOMContentLoaded', function () {
-		populateAllDatalists( VMIA.catalogue );
-		bindScan();
-		bindFix();
-		bindGodFix();
-		bindGenerate();
-		bindMediaQuick();
-		bindSettings();
-		bindAuditorFeatures();
-
-		// Better Datalist behavior: show all options on empty click
-		document.addEventListener( 'click', ( e ) => {
-			if ( e.target.tagName === 'INPUT' && e.target.getAttribute( 'list' ) ) {
-				if ( e.target.value === '' ) {
-					// Some browsers show the full list on focus, others need a tiny kick
-					e.target.setAttribute( 'placeholder', e.target.getAttribute( 'placeholder' ) || '' );
+		// Auto-check on dashboard banner container if present
+		if ( bannerContainer ) {
+			api( '/check-update', {}, 'GET' ).then( r => {
+				if ( r && r.ok && r.has_update ) {
+					renderUpdate( r, bannerContainer );
 				}
-			}
-		} );
-	} );
+			} ).catch( () => {} );
+		}
+	}
 
 	function bindAuditorFeatures() {
 		const filterType = document.getElementById( 'vmia-filter-type' );
@@ -680,4 +709,27 @@
 			} );
 		}
 	}
+
+	document.addEventListener( 'DOMContentLoaded', function () {
+		bindTheme();
+		populateAllDatalists( VMIA.catalogue );
+		bindScan();
+		bindFix();
+		bindGodFix();
+		bindGenerate();
+		bindBulkGenerateMissing();
+		bindMediaQuick();
+		bindSettings();
+		bindAuditorFeatures();
+		bindGitHubUpdater();
+
+		// Better Datalist behavior: show all options on empty click
+		document.addEventListener( 'click', ( e ) => {
+			if ( e.target.tagName === 'INPUT' && e.target.getAttribute( 'list' ) ) {
+				if ( e.target.value === '' ) {
+					e.target.setAttribute( 'placeholder', e.target.getAttribute( 'placeholder' ) || '' );
+				}
+			}
+		} );
+	} );
 } )();

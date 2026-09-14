@@ -41,9 +41,13 @@ class VMIA_Admin {
 	}
 
 	public function assets( $hook ) {
-		if ( false === strpos( (string) $hook, VMIA_SLUG ) ) {
+		$is_plugin_page = false !== strpos( (string) $hook, VMIA_SLUG );
+		$is_media_page  = in_array( (string) $hook, array( 'upload.php', 'post.php', 'post-new.php' ), true );
+
+		if ( ! $is_plugin_page && ! $is_media_page ) {
 			return;
 		}
+
 		wp_enqueue_style( 'vmia-admin', VMIA_URL . 'assets/css/admin.css', array(), VMIA_VERSION );
 		wp_enqueue_script( 'vmia-admin', VMIA_URL . 'assets/js/admin.js', array( 'wp-api-fetch' ), VMIA_VERSION, true );
 		wp_localize_script(
@@ -53,6 +57,7 @@ class VMIA_Admin {
 				'root'      => esc_url_raw( rest_url( 'vmia/v1' ) ),
 				'nonce'     => wp_create_nonce( 'wp_rest' ),
 				'catalogue' => VMIA_Model_Sync::catalogue(),
+				'theme'     => VMIA_Settings::get( 'theme', 'light' ),
 			)
 		);
 	}

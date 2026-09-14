@@ -36,8 +36,17 @@ class VMIA_Activator {
 	 */
 	public static function schedule() {
 		$freq = VMIA_Settings::get( 'scan_frequency', 'daily' );
-		if ( VMIA_Settings::get( 'auto_scan' ) && ! wp_next_scheduled( self::CRON_SCAN ) ) {
-			wp_schedule_event( time() + 300, $freq, self::CRON_SCAN );
+		if ( VMIA_Settings::get( 'auto_scan' ) ) {
+			$timestamp = wp_next_scheduled( self::CRON_SCAN );
+			$event     = wp_get_scheduled_event( self::CRON_SCAN );
+			if ( ! $timestamp ) {
+				wp_schedule_event( time() + 300, $freq, self::CRON_SCAN );
+			} elseif ( $event && $event->schedule !== $freq ) {
+				wp_clear_scheduled_hook( self::CRON_SCAN );
+				wp_schedule_event( time() + 300, $freq, self::CRON_SCAN );
+			}
+		} else {
+			wp_clear_scheduled_hook( self::CRON_SCAN );
 		}
 		if ( ! wp_next_scheduled( self::CRON_SYNC ) ) {
 			wp_schedule_event( time() + 120, 'twicedaily', self::CRON_SYNC );

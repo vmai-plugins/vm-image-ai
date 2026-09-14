@@ -9,7 +9,7 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<div class="wrap vmia">
+<div class="wrap vmia" data-theme="<?php echo esc_attr( VMIA_Settings::get( 'theme', 'light' ) ); ?>">
 	<div class="vmia-topbar">
 		<div class="vmia-brand">
 			<span class="vmia-logo">VM</span>
@@ -19,6 +19,11 @@ defined( 'ABSPATH' ) || exit;
 			</div>
 		</div>
 		<div class="vmia-actions">
+			<div class="vmia-theme-toggle">
+				<button type="button" class="vmia-theme-btn <?php echo VMIA_Settings::get( 'theme', 'light' ) === 'light' ? 'active' : ''; ?>" data-theme-set="light" title="<?php esc_attr_e( 'Light mode', 'vm-image-ai' ); ?>">☀️</button>
+				<button type="button" class="vmia-theme-btn <?php echo VMIA_Settings::get( 'theme', 'light' ) === 'dark' ? 'active' : ''; ?>" data-theme-set="dark" title="<?php esc_attr_e( 'Dark mode', 'vm-image-ai' ); ?>">🌙</button>
+				<button type="button" class="vmia-theme-btn <?php echo VMIA_Settings::get( 'theme', 'light' ) === 'auto' ? 'active' : ''; ?>" data-theme-set="auto" title="<?php esc_attr_e( 'System preference', 'vm-image-ai' ); ?>">⚙️</button>
+			</div>
 			<select id="vmia-filter-type" class="vmia-input vmia-input-sm" style="width:200px; margin-right:10px;">
 				<option value=""><?php esc_html_e( 'All Issue Types', 'vm-image-ai' ); ?></option>
 				<?php foreach ( $labels as $code => $data ) : ?>

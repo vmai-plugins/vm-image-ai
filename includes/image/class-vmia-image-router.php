@@ -19,10 +19,11 @@ class VMIA_Image_Router {
 		$args = wp_parse_args(
 			$args,
 			array(
-				'width'  => 1200,
-				'height' => 630,
-				'style'  => 'clean modern editorial, high detail, professional lighting',
-				'enrich' => true,
+				'width'    => 1200,
+				'height'   => 630,
+				'style'    => 'clean modern editorial, high detail, professional lighting',
+				'enrich'   => true,
+				'negative' => VMIA_Settings::get( 'negative_prompt', '' ),
 			)
 		);
 
@@ -31,6 +32,7 @@ class VMIA_Image_Router {
 		$last   = 'no image provider configured';
 
 		$providers = array(
+			'omniroute'    => 'VMIA_Provider_Omniroute',
 			'pollinations' => 'VMIA_Provider_Pollinations',
 			'google'        => 'VMIA_Provider_Google',
 			'google_search' => 'VMIA_Provider_Google_Search',
@@ -78,9 +80,9 @@ class VMIA_Image_Router {
 		$post_id = (int) ( $args['post_id'] ?? 0 );
 		$desc    = ! empty( $args['title'] ) ? $args['title'] : $subject;
 
-		$attach_id = ! empty( $gen['url'] )
-			? $media->sideload_url( $gen['url'], $post_id, $desc )
-			: $media->sideload_path( $gen['path'], $post_id, $desc );
+		$attach_id = ! empty( $gen['path'] ) && file_exists( $gen['path'] )
+			? $media->sideload_path( $gen['path'], $post_id, $desc )
+			: $media->sideload_url( $gen['url'], $post_id, $desc );
 
 		if ( is_wp_error( $attach_id ) ) {
 			return array( 'ok' => false, 'error' => $attach_id->get_error_message() );
@@ -151,10 +153,6 @@ class VMIA_Image_Router {
 		$out = ! empty( $res['ok'] ) ? trim( $res['text'] ) : '';
 
 		$final = $out !== '' ? $out : trim( $subject . ', ' . $style );
-
-		if ( $negative ) {
-			$final .= " --no " . $negative; // Standard format for some models, others ignore it.
-		}
 
 		return $final;
 	}

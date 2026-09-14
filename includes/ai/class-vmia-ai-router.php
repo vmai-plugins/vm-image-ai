@@ -113,6 +113,49 @@ class VMIA_AI_Router {
 		return array( 'ok' => true, 'text' => (string) $text, 'provider' => 'openai' );
 	}
 
+	protected function call_omniroute( $prompt, $args ) {
+		$base = rtrim( (string) VMIA_Settings::get( 'omniroute_base' ), '/' );
+		$key  = VMIA_Settings::get( 'omniroute_key' );
+		if ( ! $base ) {
+			return array( 'ok' => false, 'error' => 'omniroute base not configured' );
+		}
+		$model = VMIA_Settings::get( 'omniroute_text_model', 'openai/gpt-4o-mini' );
+
+		$body = array(
+			'model'       => $model,
+			'temperature' => (float) $args['temperature'],
+			'max_tokens'  => (int) $args['max_tokens'],
+			'messages'    => array(
+				array( 'role' => 'system', 'content' => $args['system'] ),
+				array( 'role' => 'user', 'content' => $prompt ),
+			),
+		);
+		if ( ! empty( $args['json'] ) ) {
+			$body['response_format'] = array( 'type' => 'json_object' );
+		}
+
+		$headers = array();
+		if ( $key ) {
+			$headers['Authorization'] = 'Bearer ' . $key;
+		}
+
+		$data = VMIA_HTTP::post_json(
+			$base . '/chat/completions',
+			$body,
+			$headers
+		);
+
+		if ( is_wp_error( $data ) ) {
+			return array( 'ok' => false, 'error' => 'omniroute: ' . $data->get_error_message() );
+		}
+
+		$text = $data['choices'][0]['message']['content'] ?? '';
+		if ( '' === trim( (string) $text ) ) {
+			return array( 'ok' => false, 'error' => 'omniroute: empty response' );
+		}
+		return array( 'ok' => true, 'text' => (string) $text, 'provider' => 'omniroute' );
+	}
+
 	protected function call_aipuffer( $prompt, $args ) {
 		$key    = VMIA_Settings::get( 'aipuffer_key' );
 		$base   = rtrim( (string) VMIA_Settings::get( 'aipuffer_base' ), '/' );
@@ -232,6 +275,43 @@ class VMIA_AI_Router {
 			return array( 'ok' => false, 'error' => 'openrouter: empty response' );
 		}
 		return array( 'ok' => true, 'text' => (string) $text, 'provider' => 'openrouter' );
+	}
+
+	protected function call_xai( $prompt, $args ) {
+		$key = VMIA_Settings::get( 'xai_key' );
+		if ( ! $key ) {
+			return array( 'ok' => false, 'error' => 'xai not configured' );
+		}
+		$model = VMIA_Settings::get( 'xai_model', 'grok-2-latest' );
+
+		$body = array(
+			'model'       => $model,
+			'temperature' => (float) $args['temperature'],
+			'max_tokens'  => (int) $args['max_tokens'],
+			'messages'    => array(
+				array( 'role' => 'system', 'content' => $args['system'] ),
+				array( 'role' => 'user', 'content' => $prompt ),
+			),
+		);
+		if ( ! empty( $args['json'] ) ) {
+			$body['response_format'] = array( 'type' => 'json_object' );
+		}
+
+		$data = VMIA_HTTP::post_json(
+			'https://api.x.ai/v1/chat/completions',
+			$body,
+			array( 'Authorization' => 'Bearer ' . $key )
+		);
+
+		if ( is_wp_error( $data ) ) {
+			return array( 'ok' => false, 'error' => 'xai: ' . $data->get_error_message() );
+		}
+
+		$text = $data['choices'][0]['message']['content'] ?? '';
+		if ( '' === trim( (string) $text ) ) {
+			return array( 'ok' => false, 'error' => 'xai: empty response' );
+		}
+		return array( 'ok' => true, 'text' => (string) $text, 'provider' => 'xai' );
 	}
 
 	/* --------------------------------------------------------------------- */

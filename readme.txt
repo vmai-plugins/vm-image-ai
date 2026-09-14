@@ -4,7 +4,7 @@ Tags: images, seo, ai, image generation, alt text, webp, featured image
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,14 @@ It works best with at least one text provider configured. Without any, it degrad
 gracefully to filename/context-derived alt text.
 
 == Changelog ==
+
+= 1.0.1 =
+* Added GitHub online auto-updater for releases and updates directly inside WP Admin.
+* Full Light & Dark mode dual-theme system (default Light mode matching WP Admin core palette).
+* Upgraded Text & Vision engines: Added xAI Grok provider, OpenAI Vision integration, URL-safe Gemini keys.
+* Upgraded Image engines: OmniRoute integration, ComfyUI negative prompt setting, Google Imagen 3 aspect ratios, Pollinations local-cache sideloading.
+* Fixed Media Library script enqueueing for single post/media quick actions.
+* Added live update check endpoint and Settings updater panel.
 
 = 1.0.0 =
 * Initial release: generation engine, vision-grounded SEO writer, auditor, God Fix,

@@ -3,7 +3,7 @@
  * Plugin Name:       VM Image AI
  * Plugin URI:        https://vmstudio.digital/vm-image-ai
  * Description:        AI-integrated featured & blog image generator with intelligent Image-SEO auditing, auto alt/title/caption/description writing, resizing/compression, gap detection and one-click "God Fix". Free engine stack: AI Puffer + Gemini + OpenRouter (live model sync fallback) for text/vision, and AI Puffer + Pollinations + ComfyUI + Pexels for image generation.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.0
  * Requires PHP:      8.1
  * Author:            VM Studio Creatives
@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 /* -------------------------------------------------------------------------
  * Constants
  * ---------------------------------------------------------------------- */
-define( 'VMIA_VERSION', '1.0.0' );
+define( 'VMIA_VERSION', '1.0.1' );
 define( 'VMIA_DB_VERSION', '1.0.0' );
 define( 'VMIA_FILE', __FILE__ );
 define( 'VMIA_DIR', plugin_dir_path( __FILE__ ) );

@@ -22,11 +22,12 @@ class VMIA_Provider_Comfyui {
 		}
 		$w     = (int) ( $args['width'] ?? 1024 );
 		$h     = (int) ( $args['height'] ?? 1024 );
-		$ckpt  = VMIA_Settings::get( 'comfyui_ckpt', 'sd_xl_base_1.0.safetensors' );
-		$steps = (int) VMIA_Settings::get( 'comfyui_steps', 25 );
-		$seed  = isset( $args['seed'] ) ? (int) $args['seed'] : wp_rand( 1, PHP_INT_MAX );
+		$ckpt     = VMIA_Settings::get( 'comfyui_ckpt', 'sd_xl_base_1.0.safetensors' );
+		$steps    = (int) VMIA_Settings::get( 'comfyui_steps', 25 );
+		$seed     = isset( $args['seed'] ) ? (int) $args['seed'] : wp_rand( 1, PHP_INT_MAX );
+		$negative = ! empty( $args['negative'] ) ? (string) $args['negative'] : (string) VMIA_Settings::get( 'negative_prompt', 'lowres, blurry, watermark, text, deformed' );
 
-		$graph = $this->build_graph( $prompt, $w, $h, $ckpt, $steps, $seed );
+		$graph = $this->build_graph( $prompt, $w, $h, $ckpt, $steps, $seed, $negative );
 		$cid   = wp_generate_uuid4();
 
 		$resp = wp_remote_post(
@@ -77,12 +78,12 @@ class VMIA_Provider_Comfyui {
 	/**
 	 * Minimal SDXL txt2img graph.
 	 */
-	protected function build_graph( $prompt, $w, $h, $ckpt, $steps, $seed ) {
+	protected function build_graph( $prompt, $w, $h, $ckpt, $steps, $seed, $negative = 'lowres, blurry, watermark, text, deformed' ) {
 		return array(
 			'4'  => array( 'class_type' => 'CheckpointLoaderSimple', 'inputs' => array( 'ckpt_name' => $ckpt ) ),
 			'5'  => array( 'class_type' => 'EmptyLatentImage', 'inputs' => array( 'width' => $w, 'height' => $h, 'batch_size' => 1 ) ),
 			'6'  => array( 'class_type' => 'CLIPTextEncode', 'inputs' => array( 'text' => $prompt, 'clip' => array( '4', 1 ) ) ),
-			'7'  => array( 'class_type' => 'CLIPTextEncode', 'inputs' => array( 'text' => 'lowres, blurry, watermark, text, deformed', 'clip' => array( '4', 1 ) ) ),
+			'7'  => array( 'class_type' => 'CLIPTextEncode', 'inputs' => array( 'text' => $negative, 'clip' => array( '4', 1 ) ) ),
 			'3'  => array(
 				'class_type' => 'KSampler',
 				'inputs'     => array(

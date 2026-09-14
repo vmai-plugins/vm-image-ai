@@ -60,6 +60,7 @@ class VMIA_Model_Sync {
 			'cloudflare'   => array(),
 			'gemini'       => array(),
 			'xai'          => array(),
+			'omniroute'    => array(),
 			'aipuffer'     => array(),
 			'synced_at'    => current_time( 'mysql' )
 		);
@@ -120,7 +121,19 @@ class VMIA_Model_Sync {
 			}
 		}
 
-		// 6. AI Puffer (Bot Sync)
+		// 6. OmniRoute
+		$or_base = VMIA_Settings::get( 'omniroute_base' );
+		$or_key  = VMIA_Settings::get( 'omniroute_key' );
+		if ( $or_base ) {
+			$headers = array();
+			if ( $or_key ) $headers['Authorization'] = 'Bearer ' . $or_key;
+			$resp = VMIA_HTTP::post_json( rtrim( $or_base, '/' ) . '/models', null, $headers, 20, 'GET' );
+			if ( ! is_wp_error( $resp ) && ! empty( $resp['data'] ) ) {
+				$catalogue['omniroute'] = wp_list_pluck( $resp['data'], 'id' );
+			}
+		}
+
+		// 7. AI Puffer (Bot Sync)
 		$ap_base = VMIA_Settings::get( 'aipuffer_base' );
 		$ap_key  = VMIA_Settings::get( 'aipuffer_key' );
 		$ap_res  = VMIA_Aipuffer_Client::list_bots( $ap_base, $ap_key );

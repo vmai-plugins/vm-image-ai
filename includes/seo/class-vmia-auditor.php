@@ -239,8 +239,8 @@ class VMIA_Auditor {
 					$missing_alt++;
 				}
 
-				// Basic broken link check (relative or missing).
-				if ( ! $src || str_contains( $src, 'placeholder' ) ) {
+				// Verified broken/missing link check (local file or live HTTP status).
+				if ( $this->url_is_broken( $src ) ) {
 					$broken_links++;
 				}
 			}
@@ -258,6 +258,55 @@ class VMIA_Auditor {
 		}
 
 		return $issues;
+	}
+
+	/**
+	 * Determine whether an in-content <img> src is missing/dead. Local uploads
+	 * are checked on disk; remote URLs get a cached HEAD/ranged-GET request so
+	 * repeated scans don't hammer external hosts.
+	 *
+	 * @param string $src
+	 * @return bool
+	 */
+	public function url_is_broken( $src ) {
+		$src = trim( (string) $src );
+		if ( '' === $src || str_contains( $src, 'placeholder' ) ) {
+			return true;
+		}
+
+		if ( str_starts_with( $src, 'data:' ) ) {
+			return false;
+		}
+
+		$upload_dir = wp_get_upload_dir();
+		if ( str_starts_with( $src, $upload_dir['baseurl'] ) ) {
+			$path = str_replace( $upload_dir['baseurl'], $upload_dir['basedir'], $src );
+			$path = strtok( $path, '?' );
+			return ! file_exists( $path );
+		}
+
+		if ( ! preg_match( '#^https?://#i', $src ) ) {
+			return false; // Can't resolve a relative path reliably; don't false-flag it.
+		}
+
+		$cache_key = 'vmia_404_' . md5( $src );
+		$cached    = get_transient( $cache_key );
+		if ( false !== $cached ) {
+			return 'broken' === $cached;
+		}
+
+		$resp = wp_remote_head( $src, array( 'timeout' => 5, 'redirection' => 3 ) );
+		$code = is_wp_error( $resp ) ? 0 : wp_remote_retrieve_response_code( $resp );
+
+		// Some hosts reject HEAD; retry with a minimal ranged GET before giving up.
+		if ( is_wp_error( $resp ) || 0 === $code || 405 === $code ) {
+			$resp = wp_remote_get( $src, array( 'timeout' => 6, 'redirection' => 3, 'headers' => array( 'Range' => 'bytes=0-0' ) ) );
+			$code = is_wp_error( $resp ) ? 0 : wp_remote_retrieve_response_code( $resp );
+		}
+
+		$broken = is_wp_error( $resp ) || 0 === $code || $code >= 400;
+		set_transient( $cache_key, $broken ? 'broken' : 'ok', DAY_IN_SECONDS );
+		return $broken;
 	}
 
 	/**

@@ -23,7 +23,22 @@ class VMIA_Provider_Google {
 		}
 
 		// Google AI Studio Imagen endpoint
-		$url  = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:predict?key={$key}";
+		$url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:predict?key=" . rawurlencode( $key );
+
+		$w     = (int) ( $args['width'] ?? 1200 );
+		$h     = (int) ( $args['height'] ?? 630 );
+		$ratio = $w / max( 1, $h );
+		if ( $ratio >= 1.5 ) {
+			$aspect_ratio = '16:9';
+		} elseif ( $ratio >= 1.2 ) {
+			$aspect_ratio = '4:3';
+		} elseif ( $ratio <= 0.65 ) {
+			$aspect_ratio = '9:16';
+		} elseif ( $ratio <= 0.85 ) {
+			$aspect_ratio = '3:4';
+		} else {
+			$aspect_ratio = '1:1';
+		}
 
 		$body = array(
 			'instances' => array(
@@ -31,6 +46,7 @@ class VMIA_Provider_Google {
 			),
 			'parameters' => array(
 				'sampleCount' => 1,
+				'aspectRatio' => $aspect_ratio,
 			),
 		);
 

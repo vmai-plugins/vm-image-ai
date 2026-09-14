@@ -32,6 +32,7 @@ class VMIA_Plugin {
 		if ( is_admin() ) {
 			$this->admin = new VMIA_Admin();
 			$this->admin->hooks();
+			VMIA_GitHub_Updater::init();
 		}
 		$this->rest = new VMIA_Rest();
 		add_action( 'rest_api_init', array( $this->rest, 'register_routes' ) );
