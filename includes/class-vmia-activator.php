@@ -86,7 +86,9 @@ class VMIA_Activator {
 			KEY object_id (object_id),
 			KEY issue_code (issue_code),
 			KEY status (status),
-			KEY severity (severity)
+			KEY severity (severity),
+			KEY obj_issue_status (object_id, issue_code, status),
+			KEY status_sev (status, severity, id)
 		) {$charset};";
 
 		$sql_log = "CREATE TABLE {$log} (

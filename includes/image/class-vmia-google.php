@@ -23,7 +23,7 @@ class VMIA_Provider_Google {
 		}
 
 		// Google AI Studio Imagen endpoint
-		$url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:predict?key=" . rawurlencode( $key );
+		$url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:predict";
 
 		$w     = (int) ( $args['width'] ?? 1200 );
 		$h     = (int) ( $args['height'] ?? 630 );
@@ -50,7 +50,7 @@ class VMIA_Provider_Google {
 			),
 		);
 
-		$data = VMIA_HTTP::post_json( $url, $body, array(), 90 );
+		$data = VMIA_HTTP::post_json( $url, $body, array( 'x-goog-api-key' => $key ), 90 );
 
 		if ( is_wp_error( $data ) ) {
 			return array( 'ok' => false, 'provider' => 'google', 'error' => $data->get_error_message() );

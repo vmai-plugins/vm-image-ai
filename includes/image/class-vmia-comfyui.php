@@ -47,10 +47,15 @@ class VMIA_Provider_Comfyui {
 			return array( 'ok' => false, 'provider' => 'comfyui', 'error' => 'no prompt_id from ComfyUI' );
 		}
 
-		// Poll history for the rendered image (up to ~120s).
-		for ( $i = 0; $i < 40; $i++ ) {
-			sleep( 3 );
-			$h_resp = wp_remote_get( $base . '/history/' . rawurlencode( $pid ), array( 'timeout' => 20 ) );
+		// Poll history for the rendered image (up to 30s or safe execution limit).
+		$start_time = time();
+		$max_time   = min( 30, (int) ini_get( 'max_execution_time' ) ?: 30 );
+		for ( $i = 0; $i < 15; $i++ ) {
+			if ( ( time() - $start_time ) >= ( $max_time - 5 ) ) {
+				break;
+			}
+			sleep( 2 );
+			$h_resp = wp_remote_get( $base . '/history/' . rawurlencode( $pid ), array( 'timeout' => 10 ) );
 			if ( is_wp_error( $h_resp ) ) {
 				continue;
 			}

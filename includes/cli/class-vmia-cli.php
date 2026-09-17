@@ -46,12 +46,22 @@ class VMIA_CLI {
 		$batch = isset( $assoc['batch'] ) ? (int) $assoc['batch'] : 0;
 		$fixer = new VMIA_Fixer();
 		$total = 0;
+		$stuck = 0;
 		do {
 			$res    = $fixer->god_fix( $batch );
 			$total += $res['fixed'];
 			\WP_CLI::log( sprintf( 'Batch: %d fixed, %d remaining', $res['fixed'], $res['remaining'] ) );
 			if ( 0 === $res['processed'] ) {
 				break;
+			}
+			if ( 0 === $res['fixed'] && $res['processed'] > 0 ) {
+				$stuck++;
+				if ( $stuck >= 2 ) {
+					\WP_CLI::warning( sprintf( 'Stopping: %d remaining issue(s) could not be resolved automatically.', $res['remaining'] ) );
+					break;
+				}
+			} else {
+				$stuck = 0;
 			}
 		} while ( $res['remaining'] > 0 );
 		\WP_CLI::success( "God Fix complete — {$total} resolved." );

@@ -193,7 +193,7 @@ class VMIA_Rest {
 		$code   = $row['issue_code'];
 		$res    = array( 'ok' => false );
 
-		if ( in_array( $code, array( 'missing_alt', 'short_alt', 'filename_alt', 'filename_title', 'missing_caption', 'bad_filename', 'duplicate_alt' ), true ) ) {
+		if ( in_array( $code, array( 'missing_alt', 'short_alt', 'filename_alt', 'filename_title', 'missing_caption', 'bad_filename', 'duplicate_alt', 'keyword_gap' ), true ) ) {
 			$post_id = (int) wp_get_post_parent_id( $obj_id );
 			$suggested = ( new VMIA_SEO_Writer() )->generate( $obj_id, $post_id );
 			if ( $suggested ) {

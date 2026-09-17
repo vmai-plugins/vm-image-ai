@@ -19,6 +19,31 @@ class VMIA_GitHub_Updater {
 		add_filter( 'pre_set_site_transient_update_plugins', array( __CLASS__, 'check_update_transient' ) );
 		add_filter( 'plugins_api', array( __CLASS__, 'plugins_api_handler' ), 20, 3 );
 		add_filter( 'upgrader_post_install', array( __CLASS__, 'post_install' ), 10, 3 );
+		add_filter( 'upgrader_pre_download', array( __CLASS__, 'pre_download' ), 10, 3 );
+	}
+
+	/**
+	 * Attach GitHub Authorization header for private repository package downloads.
+	 */
+	public static function pre_download( $reply, $package, $upgrader ) {
+		if ( strpos( $package, 'api.github.com/repos/' . self::REPO_OWNER . '/' . self::REPO_NAME ) !== false
+			|| strpos( $package, 'github.com/' . self::REPO_OWNER . '/' . self::REPO_NAME ) !== false ) {
+			$token = VMIA_Settings::get( 'github_token' );
+			if ( ! empty( $token ) ) {
+				add_filter( 'http_request_args', array( __CLASS__, 'add_download_auth_header' ), 10, 2 );
+			}
+		}
+		return $reply;
+	}
+
+	public static function add_download_auth_header( $args, $url ) {
+		$token = VMIA_Settings::get( 'github_token' );
+		if ( ! empty( $token ) && ( strpos( $url, 'github.com' ) !== false || strpos( $url, 'api.github.com' ) !== false ) ) {
+			$args['headers']['Authorization'] = 'Bearer ' . trim( $token );
+			$args['headers']['Accept']        = 'application/octet-stream';
+		}
+		remove_filter( 'http_request_args', array( __CLASS__, 'add_download_auth_header' ), 10 );
+		return $args;
 	}
 
 	/**

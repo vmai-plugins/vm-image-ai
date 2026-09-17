@@ -107,11 +107,12 @@ class VMIA_Auditor {
 		// Record health snapshot.
 		VMIA_Stats::record( 'health_score', self::health_score() );
 
-		// Clean up old records.
+		// Clean up old records using site-local timestamp matching current_time('mysql').
 		global $wpdb;
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}vmia_log WHERE created_at < %s", gmdate( 'Y-m-d H:i:s', time() - ( 14 * DAY_IN_SECONDS ) ) ) );
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}vmia_undo WHERE created_at < %s", gmdate( 'Y-m-d H:i:s', time() - ( 7 * DAY_IN_SECONDS ) ) ) );
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}vmia_stats WHERE created_at < %s", gmdate( 'Y-m-d H:i:s', time() - ( 90 * DAY_IN_SECONDS ) ) ) );
+		$site_now = current_time( 'timestamp' );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}vmia_log WHERE created_at < %s", gmdate( 'Y-m-d H:i:s', $site_now - ( 14 * DAY_IN_SECONDS ) ) ) );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}vmia_undo WHERE created_at < %s", gmdate( 'Y-m-d H:i:s', $site_now - ( 7 * DAY_IN_SECONDS ) ) ) );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}vmia_stats WHERE created_at < %s", gmdate( 'Y-m-d H:i:s', $site_now - ( 90 * DAY_IN_SECONDS ) ) ) );
 
 		return $summary;
 	}

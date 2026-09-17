@@ -20,7 +20,7 @@ class VMIA_Settings {
 	public static function defaults() {
 		return array(
 			// -- Text/vision AI engine (fallback chain, first success wins) --
-			'ai_order'            => array( 'omniroute', 'aipuffer', 'openai', 'gemini', 'openrouter' ),
+			'ai_order'            => array( 'omniroute', 'aipuffer', 'openai', 'gemini', 'openrouter', 'xai' ),
 			'vision_order'        => array( 'omniroute', 'openai', 'gemini', 'openrouter' ),
 
 			// AI Puffer (AIPKit) — talks to its own REST API on this site.
@@ -55,7 +55,7 @@ class VMIA_Settings {
 			'xai_model'           => 'grok-2-latest',
 
 			// -- Image generation engine (fallback chain) --
-			'image_order'         => array( 'omniroute', 'aipuffer', 'google', 'openai', 'pollinations', 'huggingface', 'cloudflare', 'pexels' ),
+			'image_order'         => array( 'omniroute', 'aipuffer', 'google', 'openai', 'pollinations', 'huggingface', 'cloudflare', 'pexels', 'comfyui', 'google_search' ),
 
 			// Google Imagen (via Gemini API).
 			'gemini_image_model'  => 'imagen-3.0-generate-001',

@@ -207,7 +207,7 @@ class VMIA_AI_Router {
 			return array( 'ok' => false, 'error' => 'gemini not configured' );
 		}
 		$model = VMIA_Settings::get( 'gemini_model', 'gemini-2.0-flash' );
-		$url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . rawurlencode( $key );
+		$url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
 
 		$body = array(
 			'system_instruction' => array( 'parts' => array( array( 'text' => $args['system'] ) ) ),
@@ -223,7 +223,7 @@ class VMIA_AI_Router {
 			$body['generationConfig']['responseMimeType'] = 'application/json';
 		}
 
-		$data = VMIA_HTTP::post_json( $url, $body );
+		$data = VMIA_HTTP::post_json( $url, $body, array( 'x-goog-api-key' => $key ) );
 
 		if ( is_wp_error( $data ) ) {
 			return array( 'ok' => false, 'error' => 'gemini: ' . $data->get_error_message() );

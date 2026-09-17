@@ -43,6 +43,7 @@ class VMIA_Fixer {
 			case 'missing_caption':
 			case 'bad_filename':
 			case 'duplicate_alt':
+			case 'keyword_gap':
 				$post_id = (int) wp_get_post_parent_id( $obj_id );
 				( new VMIA_SEO_Writer() )->write_for_attachment( $obj_id, $post_id, array( 'overwrite' => true ) );
 				$result = array( 'ok' => true, 'message' => 'Rewrote SEO metadata' );
@@ -77,6 +78,8 @@ class VMIA_Fixer {
 
 		if ( ! empty( $result['ok'] ) ) {
 			$this->resolve( (int) $row['id'] );
+		} else {
+			$this->mark_failed( (int) $row['id'] );
 		}
 		return $result;
 	}
@@ -196,7 +199,10 @@ class VMIA_Fixer {
 				}
 
 				$fixed++;
-				return preg_replace( '/\bsrc\s*=\s*(["\']).*?\1/i', 'src="' . esc_url( $res['url'] ) . '"', $tag, 1 );
+				$new_tag = preg_replace( '/\bsrc\s*=\s*(["\']).*?\1/i', 'src="' . esc_url( $res['url'] ) . '"', $tag, 1 );
+				// Strip stale srcset and sizes attributes so the browser loads the new image.
+				$new_tag = preg_replace( '/\b(srcset|sizes)\s*=\s*(["\']).*?\2/i', '', $new_tag );
+				return $new_tag;
 			},
 			$content
 		);
@@ -304,26 +310,21 @@ class VMIA_Fixer {
 			$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id=%d", (int) $id ), ARRAY_A ); // phpcs:ignore
 			if ( ! $row ) continue;
 
-			$obj_id = (int) $row['object_id'];
-			$res    = array( 'ok' => false );
+			$res = array( 'ok' => false );
 
 			if ( 'fix' === $action ) {
-				if ( 'broken_file' === $row['issue_code'] ) {
-					$res = $this->regenerate_image_for_audit( (int) $id );
-				} elseif ( 'content_404' === $row['issue_code'] ) {
-					$res = $this->fix_content_404( (int) $row['post_id'] );
-				} else {
-					$post_id = (int) wp_get_post_parent_id( $obj_id );
-					( new VMIA_SEO_Writer() )->write_for_attachment( $obj_id, $post_id, array( 'overwrite' => true ) );
-					$res = array( 'ok' => true );
-				}
+				$res = $this->fix_row( $row );
 			} elseif ( 'optimize' === $action ) {
-				$res = ( new VMIA_Resize() )->optimize_attachment( $obj_id );
+				$res = ( new VMIA_Resize() )->optimize_attachment( (int) $row['object_id'] );
+				if ( ! empty( $res['ok'] ) ) {
+					$this->resolve( (int) $id );
+				} else {
+					$this->mark_failed( (int) $id );
+				}
 			}
 
 			if ( ! empty( $res['ok'] ) ) {
 				$results['fixed']++;
-				$this->resolve( (int) $id );
 			} else {
 				$results['failed']++;
 			}
@@ -339,6 +340,17 @@ class VMIA_Fixer {
 			array( 'status' => 'resolved', 'resolved_at' => current_time( 'mysql' ) ),
 			array( 'id' => $audit_id ),
 			array( '%s', '%s' ),
+			array( '%d' )
+		);
+	}
+
+	protected function mark_failed( $audit_id ) {
+		global $wpdb;
+		$wpdb->update(
+			$wpdb->prefix . 'vmia_audit',
+			array( 'status' => 'failed' ),
+			array( 'id' => $audit_id ),
+			array( '%s' ),
 			array( '%d' )
 		);
 	}

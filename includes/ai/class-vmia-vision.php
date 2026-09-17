@@ -21,8 +21,35 @@ class VMIA_Vision {
 		if ( ! is_readable( $path ) ) {
 			return '';
 		}
-		$mime = wp_check_filetype( $path )['type'] ?? 'image/jpeg';
-		$b64  = base64_encode( (string) file_get_contents( $path ) ); // phpcs:ignore
+
+		$temp_path = '';
+		$load_path = $path;
+
+		// If the file is over 1MB or larger than 1200px, downsample for vision model to save memory & payload.
+		if ( filesize( $path ) > 1024 * 1024 && function_exists( 'wp_get_image_editor' ) ) {
+			$editor = wp_get_image_editor( $path );
+			if ( ! is_wp_error( $editor ) ) {
+				$size = $editor->get_size();
+				if ( ( $size['width'] ?? 0 ) > 1024 || ( $size['height'] ?? 0 ) > 1024 ) {
+					$editor->resize( 1024, 1024, false );
+					$editor->set_quality( 75 );
+					$temp_file = wp_tempnam( 'vmia_vis_' );
+					$saved = $editor->save( $temp_file, 'image/jpeg' );
+					if ( ! is_wp_error( $saved ) && ! empty( $saved['path'] ) ) {
+						$load_path = $saved['path'];
+						$temp_path = $load_path;
+					}
+				}
+			}
+		}
+
+		$mime = wp_check_filetype( $load_path )['type'] ?? 'image/jpeg';
+		$b64  = base64_encode( (string) file_get_contents( $load_path ) ); // phpcs:ignore
+
+		if ( $temp_path && file_exists( $temp_path ) ) {
+			@unlink( $temp_path );
+		}
+
 		$instruction = 'Describe the visible subject of this image in one factual sentence (max 20 words). '
 			. 'Focus on concrete objects, people, setting and mood. No preamble.'
 			. ( $hint ? ' Page context: ' . $hint : '' );
@@ -86,7 +113,7 @@ class VMIA_Vision {
 			return '';
 		}
 		$model = VMIA_Settings::get( 'gemini_vision_model', 'gemini-2.0-flash' );
-		$url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . rawurlencode( $key );
+		$url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
 		$body  = array(
 			'contents' => array(
 				array(
@@ -100,7 +127,10 @@ class VMIA_Vision {
 		);
 		$resp = wp_remote_post( $url, array(
 			'timeout' => 45,
-			'headers' => array( 'Content-Type' => 'application/json' ),
+			'headers' => array(
+				'Content-Type'   => 'application/json',
+				'x-goog-api-key' => $key,
+			),
 			'body'    => wp_json_encode( $body ),
 		) );
 		if ( is_wp_error( $resp ) ) {

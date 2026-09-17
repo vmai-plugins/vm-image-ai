@@ -53,6 +53,8 @@ class VMIA_Resize {
 			$new_path = preg_replace( '/\.\w+$/', '.webp', $path );
 			$saved    = $editor->save( $new_path, 'image/webp' );
 			if ( ! is_wp_error( $saved ) && ! empty( $saved['path'] ) ) {
+				$old_url = wp_get_attachment_url( $attach_id );
+
 				// Point the attachment at the new WebP file; drop the old original.
 				if ( $saved['path'] !== $path && file_exists( $path ) ) {
 					@unlink( $path ); // phpcs:ignore
@@ -61,6 +63,20 @@ class VMIA_Resize {
 				wp_update_post( array( 'ID' => $attach_id, 'post_mime_type' => 'image/webp' ) );
 				$path      = $saved['path'];
 				$converted = true;
+
+				// Update any post_content referencing the old URL to avoid broken 404 image links.
+				$new_url = wp_get_attachment_url( $attach_id );
+				if ( $old_url && $new_url && $old_url !== $new_url ) {
+					global $wpdb;
+					$wpdb->query(
+						$wpdb->prepare(
+							"UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s) WHERE post_content LIKE %s",
+							$old_url,
+							$new_url,
+							'%' . $wpdb->esc_like( $old_url ) . '%'
+						)
+					);
+				}
 			}
 		}
 

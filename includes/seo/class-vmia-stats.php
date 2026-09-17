@@ -7,8 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-defined( 'ABSPATH' ) || exit;
-
 class VMIA_Stats {
 
 	/**

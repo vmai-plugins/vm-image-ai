@@ -105,7 +105,7 @@ class VMIA_Model_Sync {
 		// 4. Gemini
 		$gemini_key = VMIA_Settings::get( 'gemini_key' );
 		if ( $gemini_key ) {
-			$resp = VMIA_HTTP::post_json( "https://generativelanguage.googleapis.com/v1beta/models?key=" . rawurlencode( $gemini_key ), null, array(), 20, 'GET' );
+			$resp = VMIA_HTTP::post_json( 'https://generativelanguage.googleapis.com/v1beta/models', null, array( 'x-goog-api-key' => $gemini_key ), 20, 'GET' );
 			if ( ! is_wp_error( $resp ) && ! empty( $resp['models'] ) ) {
 				$catalogue['gemini'] = wp_list_pluck( $resp['models'], 'name' );
 				$catalogue['gemini'] = array_map( function( $n ) { return str_replace( 'models/', '', $n ); }, $catalogue['gemini'] );

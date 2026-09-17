@@ -317,6 +317,7 @@
 				let totalFixed = 0;
 				let remaining = Infinity;
 				let start = null;
+				let stuckCount = 0;
 				try {
 					do {
 						const r = await api( '/god-fix', {} );
@@ -327,6 +328,17 @@
 						if ( bar ) bar.style.width = Math.min( 100, done ) + '%';
 						if ( lbl ) lbl.textContent = `Fixed ${ totalFixed } · ${ remaining } remaining`;
 						if ( r.processed === 0 ) break;
+
+						// Prevent infinite loops if issues fail repeatedly and cannot be fixed.
+						if ( r.fixed === 0 && r.processed > 0 ) {
+							stuckCount++;
+							if ( stuckCount >= 2 ) {
+								toast( `God Fix paused: ${ remaining } issue(s) could not be automatically resolved.`, 'warn' );
+								break;
+							}
+						} else {
+							stuckCount = 0;
+						}
 					} while ( remaining > 0 );
 
 					toast( `God Fix complete — ${ totalFixed } issue(s) resolved` );
