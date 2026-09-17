@@ -2,13 +2,26 @@
 ( function () {
 	'use strict';
 
-	const api = ( path, body, method = 'POST' ) =>
-		wp.apiFetch( {
-			url: VMIA.root + path,
+	const api = ( path, body = null, method = 'POST' ) => {
+		const root = ( ( window.VMIA && VMIA.root ) || '' ).replace( /\/+$/, '' );
+		const cleanPath = ( path || '' ).replace( /^\/+/, '' );
+		const isGetOrHead = method === 'GET' || method === 'HEAD';
+
+		const options = {
+			url: root + '/' + cleanPath,
 			method,
-			headers: { 'X-WP-Nonce': VMIA.nonce, 'Content-Type': 'application/json' },
-			body: body ? JSON.stringify( body ) : undefined,
-		} );
+			headers: {
+				'X-WP-Nonce': ( window.VMIA && VMIA.nonce ) || '',
+			},
+		};
+
+		if ( ! isGetOrHead && body !== null && body !== undefined ) {
+			options.headers['Content-Type'] = 'application/json';
+			options.body = typeof body === 'string' ? body : JSON.stringify( body );
+		}
+
+		return wp.apiFetch( options );
+	};
 
 	function toast( msg, type = 'ok' ) {
 		const el = document.getElementById( 'vmia-toast' );
@@ -616,8 +629,8 @@
 			checkBtn.addEventListener( 'click', async () => {
 				busy( checkBtn, true, 'Checking…' );
 				try {
-					const r = await api( '/check-update', {}, 'GET' );
-					if ( r.ok ) {
+					const r = await api( '/check-update', null, 'GET' );
+					if ( r && r.ok ) {
 						renderUpdate( r, resultBox );
 						if ( r.has_update ) {
 							toast( `Update v${ r.new_version } available!` );
@@ -625,10 +638,14 @@
 							toast( `Up to date (v${ r.current_version })` );
 						}
 					} else {
-						toast( r.message || 'Check failed', 'err' );
+						const errMsg = ( r && r.message ) || 'Check failed';
+						if ( resultBox ) resultBox.innerHTML = `<p class="vmia-muted" style="color:var(--err); margin:6px 0;">✕ ${ errMsg }</p>`;
+						toast( errMsg, 'err' );
 					}
 				} catch ( e ) {
-					toast( 'Update check failed: ' + ( e.message || e ), 'err' );
+					const msg = ( e && ( e.message || e.code ) ) || 'Could not connect to update service';
+					if ( resultBox ) resultBox.innerHTML = `<p class="vmia-muted" style="color:var(--err); margin:6px 0;">✕ ${ msg }</p>`;
+					toast( 'Update check failed: ' + msg, 'err' );
 				} finally {
 					busy( checkBtn, false );
 				}
@@ -637,7 +654,7 @@
 
 		// Auto-check on dashboard banner container if present
 		if ( bannerContainer ) {
-			api( '/check-update', {}, 'GET' ).then( r => {
+			api( '/check-update', null, 'GET' ).then( r => {
 				if ( r && r.ok && r.has_update ) {
 					renderUpdate( r, bannerContainer );
 				}

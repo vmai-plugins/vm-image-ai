@@ -65,6 +65,8 @@ class VMIA_GitHub_Updater {
 		return $headers;
 	}
 
+	protected static $last_error = null;
+
 	/**
 	 * Query latest release from GitHub API.
 	 *
@@ -72,6 +74,8 @@ class VMIA_GitHub_Updater {
 	 * @return array|null
 	 */
 	public static function get_latest_release( $force = false ) {
+		self::$last_error = null;
+
 		if ( ! $force ) {
 			$cached = get_site_transient( self::CACHE_KEY );
 			if ( false !== $cached && is_array( $cached ) ) {
@@ -85,7 +89,24 @@ class VMIA_GitHub_Updater {
 			'headers' => self::get_headers(),
 		) );
 
-		if ( is_wp_error( $resp ) || 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+		if ( is_wp_error( $resp ) ) {
+			self::$last_error = $resp->get_error_message();
+			return null;
+		}
+
+		$code = wp_remote_retrieve_response_code( $resp );
+
+		if ( 403 === $code ) {
+			self::$last_error = __( 'GitHub API rate limit exceeded. Please configure a GitHub Token in settings.', 'vm-image-ai' );
+			return null;
+		}
+
+		if ( 401 === $code ) {
+			self::$last_error = __( 'GitHub authentication failed. Check your GitHub Token in settings.', 'vm-image-ai' );
+			return null;
+		}
+
+		if ( 200 !== $code ) {
 			// Fallback: Check tags if releases/latest is empty or not yet published
 			$tags_url  = sprintf( 'https://api.github.com/repos/%s/%s/tags', self::REPO_OWNER, self::REPO_NAME );
 			$tags_resp = wp_remote_get( $tags_url, array(
@@ -93,7 +114,18 @@ class VMIA_GitHub_Updater {
 				'headers' => self::get_headers(),
 			) );
 
-			if ( ! is_wp_error( $tags_resp ) && 200 === wp_remote_retrieve_response_code( $tags_resp ) ) {
+			if ( is_wp_error( $tags_resp ) ) {
+				self::$last_error = $tags_resp->get_error_message();
+				return null;
+			}
+
+			$tags_code = wp_remote_retrieve_response_code( $tags_resp );
+			if ( 403 === $tags_code ) {
+				self::$last_error = __( 'GitHub API rate limit exceeded. Please configure a GitHub Token in settings.', 'vm-image-ai' );
+				return null;
+			}
+
+			if ( 200 === $tags_code ) {
 				$tags = json_decode( wp_remote_retrieve_body( $tags_resp ), true );
 				if ( ! empty( $tags ) && is_array( $tags ) && isset( $tags[0]['name'] ) ) {
 					$tag_name = $tags[0]['name'];
@@ -110,7 +142,12 @@ class VMIA_GitHub_Updater {
 					set_site_transient( self::CACHE_KEY, $data, 6 * HOUR_IN_SECONDS );
 					return $data;
 				}
+				// 200 with empty tags array -> repo is reachable, just no releases/tags yet
+				self::$last_error = null;
+				return null;
 			}
+
+			self::$last_error = sprintf( __( 'GitHub API returned HTTP %d', 'vm-image-ai' ), $code );
 			return null;
 		}
 
@@ -264,10 +301,20 @@ class VMIA_GitHub_Updater {
 	public static function check_for_updates() {
 		$release = self::get_latest_release( true );
 		if ( ! $release ) {
+			if ( ! empty( self::$last_error ) ) {
+				return array(
+					'ok'              => false,
+					'current_version' => VMIA_VERSION,
+					'message'         => self::$last_error,
+				);
+			}
+
 			return array(
-				'ok'              => false,
+				'ok'              => true,
+				'has_update'      => false,
 				'current_version' => VMIA_VERSION,
-				'message'         => __( 'Could not contact GitHub releases API. Check internet connection or token.', 'vm-image-ai' ),
+				'new_version'     => VMIA_VERSION,
+				'message'         => sprintf( __( 'You are on the latest version (v%s). No newer releases found on GitHub repository.', 'vm-image-ai' ), VMIA_VERSION ),
 			);
 		}
 
